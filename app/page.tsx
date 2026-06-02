@@ -5,6 +5,7 @@ import { FastSlowRatioChart } from "@/components/charts/FastSlowRatioChart";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RegionInsightCard } from "@/components/dashboard/RegionInsightCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { NearbyStationFinder } from "@/components/location/NearbyStationFinder";
 import { RegionRankingTable } from "@/components/tables/RegionRankingTable";
 import { getDashboardDataset } from "@/lib/data";
 import { dateTime, number, percent } from "@/lib/format";
@@ -19,6 +20,27 @@ export default async function HomePage() {
   const national = data.national;
   const bestRegions = [...data.sidoMetrics].sort((a, b) => b.chargingOpportunityScore - a.chargingOpportunityScore);
   const crowdedRegions = [...data.sidoMetrics].sort((a, b) => b.congestionRate - a.congestionRate);
+  const stationLocations = data.stations.map(({ id, name, address, sido, sigungu, latitude, longitude, operator }) => ({
+    id,
+    name,
+    address,
+    sido,
+    sigungu,
+    latitude,
+    longitude,
+    operator
+  }));
+  const locationMetrics = data.stationMetrics.map(
+    ({ stationId, availabilityRate, congestionRate, fastChargerRate, chargingOpportunityScore, availableChargers, totalChargers }) => ({
+      stationId,
+      availabilityRate,
+      congestionRate,
+      fastChargerRate,
+      chargingOpportunityScore,
+      availableChargers,
+      totalChargers
+    })
+  );
 
   return (
     <DashboardShell title="전국 전기차 충전 분석 대시보드" description="공공 API 수집, 정규화, 저장, 집계, 캐싱 구조를 고려한 충전 인프라 분석 화면입니다.">
@@ -35,6 +57,7 @@ export default async function HomePage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
+          <NearbyStationFinder stations={stationLocations} metrics={locationMetrics} limit={5} compact />
           <AdSlot slotId="home-mid" minHeight={140} />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <RegionInsightCard title="충전 여유도 상위 지역" regions={bestRegions} metric="chargingOpportunityScore" />
