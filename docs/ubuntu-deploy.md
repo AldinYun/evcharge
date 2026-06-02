@@ -43,7 +43,8 @@ nano .env
 
 ```env
 DATABASE_URL="postgresql://evcharge:change-me@127.0.0.1:5432/evcharge"
-AIR_API_BASE_URL=
+AIR_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
+AIR_STATION_API_BASE_URL="https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
 AIR_API_KEY=
 CRON_SECRET="strong-random-secret"
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=
@@ -89,5 +90,5 @@ server {
 ## 8. Cron 등록
 
 ```cron
-*/10 * * * * curl -fsS -H "x-cron-secret: strong-random-secret" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
+0 */2 * * * curl -fsS -H "x-cron-secret: strong-random-secret" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
 ```

@@ -1,6 +1,7 @@
 import type { AirQualityReading, ExternalAirStation, MonitoringStation } from "@/lib/types";
 
 const numeric = (value: unknown, fallback: number) => {
+  if (value === undefined || value === null || value === "-" || value === "") return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
@@ -10,31 +11,38 @@ const coordinate = (value: unknown, fallback: number) => {
   return parsed >= -180 && parsed <= 180 ? parsed : fallback;
 };
 
-const stationId = (station: ExternalAirStation, index: number) =>
-  `AIR-${station.sidoName}-${station.sigunguName ?? "unknown"}-${station.stationName}-${index}`.replace(/\s+/g, "-");
+const slug = (value: string) => value.replace(/\s+/g, "-").replace(/[^\p{L}\p{N}-]/gu, "");
+
+const stationId = (station: ExternalAirStation) =>
+  slug(`AIR-${station.sidoName}-${station.sigunguName ?? "unknown"}-${station.stationCode ?? station.stationName}`);
 
 export function normalizeAirApiResponse(externalStations: ExternalAirStation[]) {
   const stations: MonitoringStation[] = [];
   const readings: AirQualityReading[] = [];
+  const seenStations = new Set<string>();
 
-  externalStations.forEach((external, index) => {
-    const id = stationId(external, index);
+  externalStations.forEach((external) => {
+    const id = stationId(external);
     const measuredAt = external.dataTime ? new Date(external.dataTime) : new Date();
-    const station: MonitoringStation = {
-      id,
-      name: external.stationName,
-      sido: external.sidoName,
-      sigungu: external.sigunguName ?? external.addr.split(/\s+/)[1] ?? "미분류",
-      address: external.addr,
-      latitude: coordinate(external.latitude, 37.5665),
-      longitude: coordinate(external.longitude, 126.978)
-    };
+    const safeMeasuredAt = Number.isNaN(measuredAt.getTime()) ? new Date() : measuredAt;
 
-    stations.push(station);
+    if (!seenStations.has(id)) {
+      stations.push({
+        id,
+        name: external.stationName,
+        sido: external.sidoName,
+        sigungu: external.sigunguName ?? external.addr.split(/\s+/)[1] ?? "미분류",
+        address: external.addr,
+        latitude: coordinate(external.latitude, 37.5665),
+        longitude: coordinate(external.longitude, 126.978)
+      });
+      seenStations.add(id);
+    }
+
     readings.push({
-      id: `READ-${id}`,
+      id: `READ-${id}-${safeMeasuredAt.getTime()}`,
       stationId: id,
-      measuredAt: Number.isNaN(measuredAt.getTime()) ? new Date() : measuredAt,
+      measuredAt: safeMeasuredAt,
       pm10: numeric(external.pm10Value, 35),
       pm25: numeric(external.pm25Value, 18),
       o3: numeric(external.o3Value, 0.03),

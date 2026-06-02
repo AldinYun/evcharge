@@ -81,12 +81,14 @@ export type AirDashboardDataset = {
 };
 
 export type ExternalAirStation = {
+  stationCode?: string;
   stationName: string;
   sidoName: string;
   sigunguName?: string;
   addr: string;
   latitude?: string | number;
   longitude?: string | number;
+  mangName?: string;
   pm10Value?: string | number;
   pm25Value?: string | number;
   o3Value?: string | number;

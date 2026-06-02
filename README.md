@@ -26,12 +26,28 @@ npm run dev
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/evcharge"
 AIR_API_BASE_URL=
+AIR_STATION_API_BASE_URL=
 AIR_API_KEY=
 CRON_SECRET="change-me"
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=
 ```
 
-`AIR_API_BASE_URL`, `AIR_API_KEY`가 비어 있으면 mock collector로 동작합니다.
+`AIR_API_KEY`가 비어 있으면 mock collector로 동작합니다.
+
+실제 AirKorea API 예시:
+
+```env
+AIR_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
+AIR_STATION_API_BASE_URL="https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
+AIR_API_KEY="공공데이터포털_인증키"
+```
+
+collector는 자동으로 다음 엔드포인트를 호출합니다.
+
+- 대기오염정보: `getCtprvnRltmMesureDnsty`
+- 측정소정보: `getMsrstnList`
+
+전국 17개 시도 기준 1회 수집은 측정소정보 17콜 + 대기오염정보 17콜, 총 약 34콜입니다. 일일 트래픽 500이면 2시간 주기, 하루 12회 수집이 약 408콜이라 안전합니다.
 
 ## Prisma
 
@@ -64,6 +80,12 @@ DB 저장이 실패해도 mock 수집과 집계가 완료되면 `partial_success
 
 ```bash
 curl -H "x-cron-secret: change-me" http://localhost:3000/api/cron/air-status
+```
+
+일일 트래픽 500 기준 권장 cron:
+
+```cron
+0 */2 * * * curl -fsS -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
 ```
 
 ## Docker 목버전 배포
