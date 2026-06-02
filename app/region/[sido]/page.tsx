@@ -6,7 +6,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AirRankingTable } from "@/components/tables/AirRankingTable";
 import { getDashboardDataset } from "@/lib/data";
-import { dateTime } from "@/lib/format";
+import { dateTime, microgram, ventilationStatusLabel } from "@/lib/format";
 
 type PageProps = { params: { sido: string } };
 
@@ -24,21 +24,22 @@ export default async function RegionPage({ params }: PageProps) {
   const region = data.sidoMetrics.find((metric) => metric.sido === sido);
   if (!region) notFound();
   const sigungu = data.sigunguMetrics.filter((metric) => metric.sido === sido).sort((a, b) => b.ventilationScore - a.ventilationScore);
+  const rankingTitle = sido === "경기" ? "경기도 시 단위 환기 랭킹" : "시군구별 환기 랭킹";
 
   return (
-    <DashboardShell title={`${sido} 미세먼지·환기 현황`} description="시군구별 환기 점수, 미세먼지, 초미세먼지, 생활 점수를 비교합니다.">
+    <DashboardShell title={`${sido} 미세먼지·환기 현황`} description="지역별 환기 점수, 미세먼지, 초미세먼지, 생활 점수를 비교합니다.">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <MetricCard label="환기 점수" value={`${region.ventilationScore}점`} tone={region.ventilationScore >= 70 ? "good" : "warn"} />
-        <MetricCard label="PM10" value={`${Math.round(region.avgPm10)}㎍/㎥`} />
-        <MetricCard label="PM2.5" value={`${Math.round(region.avgPm25)}㎍/㎥`} tone={region.avgPm25 > 35 ? "bad" : "default"} />
-        <MetricCard label="야외활동" value={`${region.outdoorActivityScore}점`} />
+        <MetricCard label="환기 상태" value={ventilationStatusLabel(region.ventilationStatus)} tone={region.ventilationStatus === "recommended" ? "good" : "warn"} />
+        <MetricCard label="PM10" value={microgram(region.avgPm10)} />
+        <MetricCard label="PM2.5" value={microgram(region.avgPm25)} tone={region.avgPm25 > 35 ? "bad" : "default"} />
         <MetricCard label="측정 시각" value={dateTime(region.measuredAt)} />
       </section>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
           <AdSlot slotId={`region-${sido}`} minHeight={140} />
-          <AirRankingTable title="시군구별 환기 랭킹" regions={sigungu} metric="ventilationScore" />
+          <AirRankingTable title={rankingTitle} regions={sigungu} metric="ventilationScore" />
         </div>
         <aside className="space-y-6">
           <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">

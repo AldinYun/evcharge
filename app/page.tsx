@@ -7,7 +7,7 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { NearbyAirStationFinder } from "@/components/location/NearbyAirStationFinder";
 import { AirRankingTable } from "@/components/tables/AirRankingTable";
 import { getDashboardDataset } from "@/lib/data";
-import { dateTime, number } from "@/lib/format";
+import { dateTime, microgram, number, ventilationStatusLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "오늘 환기해도 될까 | 전국 미세먼지·환기 타이밍",
@@ -40,10 +40,10 @@ export default async function HomePage() {
     <DashboardShell title="오늘 환기해도 될까" description="미세먼지, 초미세먼지, 습도, 풍속을 rule-based 공식으로 계산한 생활 대기질 대시보드입니다.">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="전국 환기 점수" value={`${national.ventilationScore}점`} tone={national.ventilationScore >= 70 ? "good" : "warn"} />
-        <MetricCard label="평균 PM10" value={`${Math.round(national.avgPm10)}㎍/㎥`} />
-        <MetricCard label="평균 PM2.5" value={`${Math.round(national.avgPm25)}㎍/㎥`} tone={national.avgPm25 > 35 ? "bad" : "default"} />
+        <MetricCard label="평균 PM10" value={microgram(national.avgPm10)} />
+        <MetricCard label="평균 PM2.5" value={microgram(national.avgPm25)} tone={national.avgPm25 > 35 ? "bad" : "default"} />
         <MetricCard label="측정소 수" value={number(national.stationCount)} />
-        <MetricCard label="환기 판정" value={national.ventilationStatus} tone={national.ventilationStatus === "recommended" ? "good" : "warn"} />
+        <MetricCard label="환기 판정" value={ventilationStatusLabel(national.ventilationStatus)} tone={national.ventilationStatus === "recommended" ? "good" : "warn"} />
         <MetricCard label="야외활동 점수" value={`${national.outdoorActivityScore}점`} />
         <MetricCard label="빨래 점수" value={`${national.laundryScore}점`} />
         <MetricCard label="최근 측정" value={dateTime(data.lastMeasuredAt)} />
