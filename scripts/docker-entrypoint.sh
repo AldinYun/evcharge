@@ -5,9 +5,9 @@ echo "Running Prisma migrations..."
 npx prisma migrate deploy
 
 if [ "$RUN_MOCK_PIPELINE_ON_START" = "true" ]; then
-  echo "Running mock EV pipeline..."
+  echo "Running mock air quality pipeline..."
   npm run pipeline:mock
 fi
 
-echo "Starting EV Charge app..."
+echo "Starting Air Vent Guide app..."
 exec "$@"

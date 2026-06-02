@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runEvStatusPipeline } from "@/lib/pipeline";
+import { runAirQualityPipeline } from "@/lib/pipeline";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await runEvStatusPipeline();
+    const result = await runAirQualityPipeline();
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     return NextResponse.json(

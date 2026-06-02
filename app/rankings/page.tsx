@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { RegionRankingTable } from "@/components/tables/RegionRankingTable";
+import { AirRankingTable } from "@/components/tables/AirRankingTable";
 import { getDashboardDataset } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "전국 전기차 충전소 순위 | 충전 가능성·혼잡도·급속 충전기 분석",
-  description: "충전하기 좋은 지역, 혼잡도 높은 지역, 급속 충전기 비율, 고장/점검 비율 TOP 20"
+  title: "전국 미세먼지 순위 | 환기 가능 지역·초미세먼지 분석",
+  description: "전국 시군구별 환기 점수, 미세먼지, 초미세먼지, 야외활동 점수 순위"
 };
 
 export default async function RankingsPage() {
@@ -14,29 +14,13 @@ export default async function RankingsPage() {
   const regions = data.sigunguMetrics;
 
   return (
-    <DashboardShell title="전국 전기차 충전소 순위" description="시군구 단위로 충전 가능성, 혼잡도, 급속 충전기 비율, 고장/점검 비율을 비교합니다.">
+    <DashboardShell title="전국 미세먼지·환기 순위" description="자동 수집 대기질 데이터를 시군구 단위로 비교합니다.">
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <RegionRankingTable
-          title="충전하기 좋은 지역 TOP 20"
-          regions={[...regions].sort((a, b) => b.chargingOpportunityScore - a.chargingOpportunityScore).slice(0, 20)}
-          metric="chargingOpportunityScore"
-        />
-        <RegionRankingTable
-          title="혼잡도 높은 지역 TOP 20"
-          regions={[...regions].sort((a, b) => b.congestionRate - a.congestionRate).slice(0, 20)}
-          metric="congestionRate"
-        />
+        <AirRankingTable title="지금 환기 좋은 지역 TOP 20" regions={[...regions].sort((a, b) => b.ventilationScore - a.ventilationScore).slice(0, 20)} metric="ventilationScore" />
+        <AirRankingTable title="초미세먼지 높은 지역 TOP 20" regions={[...regions].sort((a, b) => b.avgPm25 - a.avgPm25).slice(0, 20)} metric="avgPm25" />
         <AdSlot slotId="rankings-mid" className="xl:col-span-2" minHeight={140} />
-        <RegionRankingTable
-          title="급속 충전기 비율 높은 지역 TOP 20"
-          regions={[...regions].sort((a, b) => b.fastChargerRate - a.fastChargerRate).slice(0, 20)}
-          metric="fastChargerRate"
-        />
-        <RegionRankingTable
-          title="고장/점검 비율 높은 지역 TOP 20"
-          regions={[...regions].sort((a, b) => b.faultRate - a.faultRate).slice(0, 20)}
-          metric="faultRate"
-        />
+        <AirRankingTable title="야외활동 좋은 지역 TOP 20" regions={[...regions].sort((a, b) => b.outdoorActivityScore - a.outdoorActivityScore).slice(0, 20)} metric="outdoorActivityScore" />
+        <AirRankingTable title="빨래하기 좋은 지역 TOP 20" regions={[...regions].sort((a, b) => b.laundryScore - a.laundryScore).slice(0, 20)} metric="laundryScore" />
       </div>
     </DashboardShell>
   );

@@ -1,9 +1,9 @@
-import { createMockStationsAndChargers } from "@/lib/mock-data";
-import type { ExternalEvStation } from "@/lib/types";
+import { createMockAirData } from "@/lib/mock-data";
+import type { ExternalAirStation } from "@/lib/types";
 
 export type CollectResult = {
   rawResponses: unknown[];
-  stations: ExternalEvStation[];
+  stations: ExternalAirStation[];
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,44 +15,48 @@ async function withRetry<T>(task: () => Promise<T>, retries = 3): Promise<T> {
       return await task();
     } catch (error) {
       lastError = error;
-      if (attempt < retries) await sleep(250 * attempt);
+      if (attempt < retries) await sleep(300 * attempt);
     }
   }
   throw lastError;
 }
 
-function mockExternalStations(): ExternalEvStation[] {
-  const { stations, chargers } = createMockStationsAndChargers();
-  return stations.map((station) => ({
-    statId: station.id,
-    statNm: station.name,
-    addr: station.address,
-    lat: station.latitude,
-    lng: station.longitude,
-    busiNm: station.operator,
-    chargers: chargers
-      .filter((charger) => charger.stationId === station.id)
-      .map((charger) => ({
-        chgerId: charger.id,
-        stat: charger.status,
-        chgerType: charger.type,
-        output: charger.outputKw,
-        lastTsdt: charger.updatedAt.toISOString()
-      }))
-  }));
+function mockExternalStations(): ExternalAirStation[] {
+  const { stations, readings } = createMockAirData();
+  const readingByStation = new Map(readings.map((reading) => [reading.stationId, reading]));
+  return stations.map((station) => {
+    const reading = readingByStation.get(station.id);
+    return {
+      stationName: station.name,
+      sidoName: station.sido,
+      sigunguName: station.sigungu,
+      addr: station.address,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      pm10Value: reading?.pm10,
+      pm25Value: reading?.pm25,
+      o3Value: reading?.o3,
+      no2Value: reading?.no2,
+      coValue: reading?.co,
+      so2Value: reading?.so2,
+      humidity: reading?.humidity,
+      windSpeed: reading?.windSpeed,
+      dataTime: reading?.measuredAt.toISOString()
+    };
+  });
 }
 
-export async function collectEvApiData(): Promise<CollectResult> {
-  const baseUrl = process.env.EV_API_BASE_URL;
-  const apiKey = process.env.EV_API_KEY;
+export async function collectAirApiData(): Promise<CollectResult> {
+  const baseUrl = process.env.AIR_API_BASE_URL;
+  const apiKey = process.env.AIR_API_KEY;
 
   if (!baseUrl || !apiKey) {
     const stations = mockExternalStations();
-    return { rawResponses: [{ source: "mock", count: stations.length }], stations };
+    return { rawResponses: [{ source: "mock-air", count: stations.length }], stations };
   }
 
   const rawResponses: unknown[] = [];
-  const stations: ExternalEvStation[] = [];
+  const stations: ExternalAirStation[] = [];
   let page = 1;
   let hasNext = true;
 
@@ -61,11 +65,12 @@ export async function collectEvApiData(): Promise<CollectResult> {
     url.searchParams.set("serviceKey", apiKey);
     url.searchParams.set("pageNo", String(page));
     url.searchParams.set("numOfRows", "500");
+    url.searchParams.set("returnType", "json");
 
     const payload = await withRetry(async () => {
       const response = await fetch(url.toString(), { cache: "no-store" });
-      if (!response.ok) throw new Error(`EV API failed: ${response.status}`);
-      return response.json() as Promise<{ items?: ExternalEvStation[]; totalCount?: number }>;
+      if (!response.ok) throw new Error(`Air API failed: ${response.status}`);
+      return response.json() as Promise<{ items?: ExternalAirStation[]; totalCount?: number }>;
     });
 
     rawResponses.push(payload);

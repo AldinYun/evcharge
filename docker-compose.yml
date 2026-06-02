@@ -26,8 +26,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://evcharge:evcharge_password@postgres:5432/evcharge
-      EV_API_BASE_URL: ""
-      EV_API_KEY: ""
+      AIR_API_BASE_URL: ""
+      AIR_API_KEY: ""
       CRON_SECRET: change-me
       NEXT_PUBLIC_ADSENSE_CLIENT_ID: ""
       RUN_MOCK_PIPELINE_ON_START: "true"

@@ -1,6 +1,6 @@
 # Docker Mock Deployment
 
-앱과 PostgreSQL을 Docker Compose로 함께 띄우는 목버전 배포 방법입니다.
+앱과 PostgreSQL을 Docker Compose로 함께 띄우는 미세먼지 목버전 배포 방법입니다.
 
 ## 요구사항
 
@@ -19,11 +19,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo usermod -aG docker "$USER"
-```
-
-권한 적용을 위해 로그아웃 후 다시 접속하거나 다음을 실행합니다.
-
-```bash
 newgrp docker
 ```
 
@@ -46,10 +41,8 @@ http://서버IP:3000
 - Next.js production app
 - PostgreSQL 16
 - Prisma migration 자동 실행
-- 컨테이너 시작 시 mock pipeline 자동 실행
-- mock collector 사용
-
-`docker-compose.yml`에서 `EV_API_BASE_URL`, `EV_API_KEY`가 비어 있으므로 실제 공공 API 없이 mock 데이터로 동작합니다.
+- 컨테이너 시작 시 mock 미세먼지 pipeline 자동 실행
+- 실제 API 없이 mock collector 사용
 
 ## 상태 확인
 
@@ -68,7 +61,7 @@ docker compose exec app npm run pipeline:mock
 ## cron API 테스트
 
 ```bash
-curl -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/ev-status
+curl -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/air-status
 ```
 
 ## 업데이트

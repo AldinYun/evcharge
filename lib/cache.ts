@@ -1,16 +1,16 @@
-import type { DashboardDataset } from "@/lib/types";
+import type { AirDashboardDataset } from "@/lib/types";
 
 const globalCache = globalThis as unknown as {
-  evchargeAggregateCache?: {
-    dataset: DashboardDataset;
+  airDashboardCache?: {
+    dataset: AirDashboardDataset;
     cachedAt: Date;
   };
 };
 
-export function cacheAggregate(dataset: DashboardDataset) {
-  globalCache.evchargeAggregateCache = { dataset, cachedAt: new Date() };
+export function cacheAggregate(dataset: AirDashboardDataset) {
+  globalCache.airDashboardCache = { dataset, cachedAt: new Date() };
 }
 
 export function getCachedAggregate() {
-  return globalCache.evchargeAggregateCache;
+  return globalCache.airDashboardCache;
 }

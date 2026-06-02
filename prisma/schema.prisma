@@ -7,111 +7,95 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ChargerStatus {
-  available
-  charging
-  reserved
-  maintenance
-  fault
-  unknown
+enum AirGrade {
+  good
+  moderate
+  bad
+  very_bad
 }
 
-enum ChargerSpeed {
-  fast
-  slow
+enum VentilationStatus {
+  recommended
+  caution
+  avoid
 }
 
-model Station {
-  id        String    @id
+model MonitoringStation {
+  id        String              @id
   name      String
-  address   String
   sido      String
   sigungu   String
+  address   String
   latitude  Float
   longitude Float
-  operator  String
-  updatedAt DateTime
-  chargers  Charger[]
+  readings  AirQualityReading[]
 
   @@index([sido, sigungu])
 }
 
-model Charger {
-  id        String                  @id
-  stationId String
-  status    ChargerStatus
-  speed     ChargerSpeed
-  type      String
-  outputKw  Float
-  updatedAt DateTime
-  station   Station                 @relation(fields: [stationId], references: [id], onDelete: Cascade)
-  snapshots ChargerStatusSnapshot[]
+model AirQualityReading {
+  id         String            @id
+  stationId  String
+  measuredAt DateTime
+  pm10       Float
+  pm25       Float
+  o3         Float
+  no2        Float
+  co         Float
+  so2        Float
+  humidity   Float
+  windSpeed  Float
+  station    MonitoringStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
 
-  @@index([stationId])
-  @@index([status])
+  @@index([stationId, measuredAt])
+  @@index([measuredAt])
 }
 
-model ChargerStatusSnapshot {
-  id         String        @id @default(cuid())
-  chargerId  String
-  status     ChargerStatus
-  capturedAt DateTime
-  charger    Charger       @relation(fields: [chargerId], references: [id], onDelete: Cascade)
-
-  @@index([chargerId, capturedAt])
-}
-
-model RegionMetric {
-  id                       String   @id
-  sido                     String
-  sigungu                  String?
-  stationCount             Int
-  totalChargers            Int
-  availableChargers        Int
-  chargingChargers         Int
-  reservedChargers         Int
-  maintenanceChargers      Int
-  faultChargers            Int
-  unknownChargers          Int
-  fastChargers             Int
-  slowChargers             Int
-  availabilityRate         Float
-  congestionRate           Float
-  faultRate                Float
-  fastChargerRate          Float
-  reliabilityScore         Float
-  freshnessScore           Float
-  chargingOpportunityScore Int
-  updatedAt                DateTime
+model AirRegionMetric {
+  id                   String            @id
+  sido                 String
+  sigungu              String?
+  stationCount         Int
+  goodCount            Int
+  moderateCount        Int
+  badCount             Int
+  veryBadCount         Int
+  avgPm10              Float
+  avgPm25              Float
+  avgO3                Float
+  avgHumidity          Float
+  avgWindSpeed         Float
+  airGrade             AirGrade
+  ventilationStatus    VentilationStatus
+  ventilationScore     Int
+  outdoorActivityScore Int
+  laundryScore         Int
+  freshnessScore       Float
+  measuredAt           DateTime
 
   @@index([sido, sigungu])
 }
 
-model StationMetric {
-  stationId                String   @id
-  stationName              String
-  sido                     String
-  sigungu                  String
-  totalChargers            Int
-  availableChargers        Int
-  chargingChargers         Int
-  reservedChargers         Int
-  maintenanceChargers      Int
-  faultChargers            Int
-  unknownChargers          Int
-  fastChargers             Int
-  slowChargers             Int
-  availabilityRate         Float
-  congestionRate           Float
-  faultRate                Float
-  fastChargerRate          Float
-  reliabilityScore         Float
-  freshnessScore           Float
-  chargingOpportunityScore Int
-  updatedAt                DateTime
+model StationAirMetric {
+  stationId            String            @id
+  stationName          String
+  sido                 String
+  sigungu              String
+  pm10                 Float
+  pm25                 Float
+  o3                   Float
+  humidity             Float
+  windSpeed            Float
+  airGrade             AirGrade
+  ventilationStatus    VentilationStatus
+  ventilationScore     Int
+  outdoorActivityScore Int
+  laundryScore         Int
+  freshnessScore       Float
+  measuredAt           DateTime
 }
 
-model RawEvApiResponse {
+model RawAirApiResponse {
   id        String   @id @default(cuid())
   payload   Json
   createdAt DateTime @default(now())
@@ -122,7 +106,6 @@ model PipelineRun {
   status       String
   startedAt    DateTime
   finishedAt   DateTime?
-  stationCount Int       @default(0)
-  chargerCount Int       @default(0)
+  sampleCount  Int       @default(0)
   errorMessage String?
 }

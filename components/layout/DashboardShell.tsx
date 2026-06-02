@@ -7,7 +7,7 @@ export function DashboardShell({ children, title, description }: { children: Rea
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
           <div>
             <Link href="/" className="text-sm font-semibold text-teal-700">
-              EV Charge Analytics
+              Air Vent Guide
             </Link>
             <h1 className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-600 sm:text-base">{description}</p>

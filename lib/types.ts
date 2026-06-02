@@ -1,92 +1,99 @@
-export type ChargerStatus = "available" | "charging" | "reserved" | "maintenance" | "fault" | "unknown";
-export type ChargerSpeed = "fast" | "slow";
+export type AirGrade = "good" | "moderate" | "bad" | "very_bad";
+export type VentilationStatus = "recommended" | "caution" | "avoid";
 
-export type Station = {
+export type MonitoringStation = {
   id: string;
   name: string;
-  address: string;
   sido: string;
   sigungu: string;
+  address: string;
   latitude: number;
   longitude: number;
-  operator: string;
-  updatedAt: Date;
 };
 
-export type Charger = {
+export type AirQualityReading = {
   id: string;
   stationId: string;
-  status: ChargerStatus;
-  speed: ChargerSpeed;
-  type: string;
-  outputKw: number;
-  updatedAt: Date;
+  measuredAt: Date;
+  pm10: number;
+  pm25: number;
+  o3: number;
+  no2: number;
+  co: number;
+  so2: number;
+  humidity: number;
+  windSpeed: number;
 };
 
-export type ChargerCounts = {
-  totalChargers: number;
-  availableChargers: number;
-  chargingChargers: number;
-  reservedChargers: number;
-  maintenanceChargers: number;
-  faultChargers: number;
-  unknownChargers: number;
-  fastChargers: number;
-  slowChargers: number;
+export type AirCounts = {
+  stationCount: number;
+  goodCount: number;
+  moderateCount: number;
+  badCount: number;
+  veryBadCount: number;
 };
 
-export type RegionMetric = ChargerCounts & {
+export type AirRegionMetric = AirCounts & {
   id: string;
   sido: string;
   sigungu?: string;
-  stationCount: number;
-  availabilityRate: number;
-  congestionRate: number;
-  faultRate: number;
-  fastChargerRate: number;
-  reliabilityScore: number;
+  avgPm10: number;
+  avgPm25: number;
+  avgO3: number;
+  avgHumidity: number;
+  avgWindSpeed: number;
+  airGrade: AirGrade;
+  ventilationStatus: VentilationStatus;
+  ventilationScore: number;
+  outdoorActivityScore: number;
+  laundryScore: number;
   freshnessScore: number;
-  chargingOpportunityScore: number;
-  updatedAt: Date;
+  measuredAt: Date;
 };
 
-export type StationMetric = ChargerCounts & {
+export type StationAirMetric = {
   stationId: string;
   stationName: string;
   sido: string;
   sigungu: string;
-  availabilityRate: number;
-  congestionRate: number;
-  faultRate: number;
-  fastChargerRate: number;
-  reliabilityScore: number;
+  pm10: number;
+  pm25: number;
+  o3: number;
+  humidity: number;
+  windSpeed: number;
+  airGrade: AirGrade;
+  ventilationStatus: VentilationStatus;
+  ventilationScore: number;
+  outdoorActivityScore: number;
+  laundryScore: number;
   freshnessScore: number;
-  chargingOpportunityScore: number;
-  updatedAt: Date;
+  measuredAt: Date;
 };
 
-export type DashboardDataset = {
-  stations: Station[];
-  chargers: Charger[];
-  national: RegionMetric;
-  sidoMetrics: RegionMetric[];
-  sigunguMetrics: RegionMetric[];
-  stationMetrics: StationMetric[];
-  lastUpdatedAt: Date;
+export type AirDashboardDataset = {
+  stations: MonitoringStation[];
+  readings: AirQualityReading[];
+  national: AirRegionMetric;
+  sidoMetrics: AirRegionMetric[];
+  sigunguMetrics: AirRegionMetric[];
+  stationMetrics: StationAirMetric[];
+  lastMeasuredAt: Date;
 };
 
-export type ExternalEvStation = {
-  statId: string;
-  statNm: string;
+export type ExternalAirStation = {
+  stationName: string;
+  sidoName: string;
+  sigunguName?: string;
   addr: string;
-  lat?: string | number;
-  lng?: string | number;
-  busiNm?: string;
-  chargers: Array<{
-    chgerId: string;
-    stat?: string;
-    chgerType?: string;
-    output?: string | number;
-    lastTsdt?: string;
-  }>;
+  latitude?: string | number;
+  longitude?: string | number;
+  pm10Value?: string | number;
+  pm25Value?: string | number;
+  o3Value?: string | number;
+  no2Value?: string | number;
+  coValue?: string | number;
+  so2Value?: string | number;
+  humidity?: string | number;
+  windSpeed?: string | number;
+  dataTime?: string;
 };

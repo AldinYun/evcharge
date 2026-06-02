@@ -1,120 +1,88 @@
-import {
-  availabilityRate,
-  chargingOpportunityScore,
-  congestionRate,
-  fastChargerRate,
-  faultRate,
-  freshnessScore,
-  reliabilityScore
-} from "@/lib/metrics";
-import type { Charger, ChargerCounts, DashboardDataset, RegionMetric, Station, StationMetric } from "@/lib/types";
+import { airGrade, freshnessScore, laundryScore, outdoorActivityScore, ventilationScore, ventilationStatus } from "@/lib/metrics";
+import type { AirDashboardDataset, AirQualityReading, AirRegionMetric, MonitoringStation, StationAirMetric } from "@/lib/types";
 
-const emptyCounts = (): ChargerCounts => ({
-  totalChargers: 0,
-  availableChargers: 0,
-  chargingChargers: 0,
-  reservedChargers: 0,
-  maintenanceChargers: 0,
-  faultChargers: 0,
-  unknownChargers: 0,
-  fastChargers: 0,
-  slowChargers: 0
-});
+const avg = (values: number[]) => (values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0);
+const latestDate = (dates: Date[]) => new Date(Math.max(...dates.map((date) => date.getTime())));
 
-function countChargers(chargers: Charger[]): ChargerCounts {
-  return chargers.reduce((counts, charger) => {
-    counts.totalChargers += 1;
-    counts.fastChargers += charger.speed === "fast" ? 1 : 0;
-    counts.slowChargers += charger.speed === "slow" ? 1 : 0;
-    if (charger.status === "available") counts.availableChargers += 1;
-    if (charger.status === "charging") counts.chargingChargers += 1;
-    if (charger.status === "reserved") counts.reservedChargers += 1;
-    if (charger.status === "maintenance") counts.maintenanceChargers += 1;
-    if (charger.status === "fault") counts.faultChargers += 1;
-    if (charger.status === "unknown") counts.unknownChargers += 1;
-    return counts;
-  }, emptyCounts());
-}
-
-function latestDate(dates: Date[]) {
-  return new Date(Math.max(...dates.map((date) => date.getTime())));
-}
-
-function metricFields(counts: ChargerCounts, updatedAt: Date) {
-  const available = availabilityRate(counts);
-  const congestion = congestionRate(counts);
-  const fault = faultRate(counts);
-  const fast = fastChargerRate(counts);
-  const reliability = reliabilityScore(fault);
-  const freshness = freshnessScore(updatedAt);
+function stationMetric(station: MonitoringStation, reading: AirQualityReading): StationAirMetric {
+  const fresh = freshnessScore(reading.measuredAt);
   return {
-    availabilityRate: available,
-    congestionRate: congestion,
-    faultRate: fault,
-    fastChargerRate: fast,
-    reliabilityScore: reliability,
-    freshnessScore: freshness,
-    chargingOpportunityScore: chargingOpportunityScore({
-      availabilityRate: available,
-      fastChargerRate: fast,
-      reliabilityScore: reliability,
-      freshnessScore: freshness
-    })
+    stationId: station.id,
+    stationName: station.name,
+    sido: station.sido,
+    sigungu: station.sigungu,
+    pm10: reading.pm10,
+    pm25: reading.pm25,
+    o3: reading.o3,
+    humidity: reading.humidity,
+    windSpeed: reading.windSpeed,
+    airGrade: airGrade(reading.pm10, reading.pm25),
+    ventilationStatus: ventilationStatus(reading.pm10, reading.pm25, reading.windSpeed),
+    ventilationScore: ventilationScore({ ...reading, freshnessScore: fresh }),
+    outdoorActivityScore: outdoorActivityScore({ ...reading, freshnessScore: fresh }),
+    laundryScore: laundryScore(reading),
+    freshnessScore: fresh,
+    measuredAt: reading.measuredAt
   };
 }
 
-function buildRegionMetric(id: string, stations: Station[], chargers: Charger[], sido: string, sigungu?: string): RegionMetric {
-  const counts = countChargers(chargers);
-  const updatedAt = latestDate([...stations.map((station) => station.updatedAt), ...chargers.map((charger) => charger.updatedAt)]);
+function regionMetric(id: string, sido: string, stationMetrics: StationAirMetric[], sigungu?: string): AirRegionMetric {
+  const avgPm10 = avg(stationMetrics.map((metric) => metric.pm10));
+  const avgPm25 = avg(stationMetrics.map((metric) => metric.pm25));
+  const avgO3 = avg(stationMetrics.map((metric) => metric.o3));
+  const avgHumidity = avg(stationMetrics.map((metric) => metric.humidity));
+  const avgWindSpeed = avg(stationMetrics.map((metric) => metric.windSpeed));
+  const measuredAt = latestDate(stationMetrics.map((metric) => metric.measuredAt));
+  const fresh = freshnessScore(measuredAt);
+  const grades = stationMetrics.map((metric) => metric.airGrade);
+
   return {
     id,
     sido,
     sigungu,
-    stationCount: stations.length,
-    ...counts,
-    ...metricFields(counts, updatedAt),
-    updatedAt
+    stationCount: stationMetrics.length,
+    goodCount: grades.filter((grade) => grade === "good").length,
+    moderateCount: grades.filter((grade) => grade === "moderate").length,
+    badCount: grades.filter((grade) => grade === "bad").length,
+    veryBadCount: grades.filter((grade) => grade === "very_bad").length,
+    avgPm10,
+    avgPm25,
+    avgO3,
+    avgHumidity,
+    avgWindSpeed,
+    airGrade: airGrade(avgPm10, avgPm25),
+    ventilationStatus: ventilationStatus(avgPm10, avgPm25, avgWindSpeed),
+    ventilationScore: ventilationScore({ pm10: avgPm10, pm25: avgPm25, humidity: avgHumidity, windSpeed: avgWindSpeed, freshnessScore: fresh }),
+    outdoorActivityScore: outdoorActivityScore({ pm10: avgPm10, pm25: avgPm25, o3: avgO3, freshnessScore: fresh }),
+    laundryScore: laundryScore({ pm10: avgPm10, pm25: avgPm25, humidity: avgHumidity, windSpeed: avgWindSpeed }),
+    freshnessScore: fresh,
+    measuredAt
   };
 }
 
-export function aggregateDataset(stations: Station[], chargers: Charger[]): DashboardDataset {
-  const chargersByStation = new Map<string, Charger[]>();
-  for (const charger of chargers) {
-    const list = chargersByStation.get(charger.stationId) ?? [];
-    list.push(charger);
-    chargersByStation.set(charger.stationId, list);
-  }
+export function aggregateAirDataset(stations: MonitoringStation[], readings: AirQualityReading[]): AirDashboardDataset {
+  const readingByStation = new Map(readings.map((reading) => [reading.stationId, reading]));
+  const stationMetrics = stations
+    .map((station) => {
+      const reading = readingByStation.get(station.id);
+      return reading ? stationMetric(station, reading) : null;
+    })
+    .filter((metric): metric is StationAirMetric => metric !== null);
 
-  const stationMetrics: StationMetric[] = stations.map((station) => {
-    const stationChargers = chargersByStation.get(station.id) ?? [];
-    const counts = countChargers(stationChargers);
-    const updatedAt = latestDate([station.updatedAt, ...stationChargers.map((charger) => charger.updatedAt)]);
-    return {
-      stationId: station.id,
-      stationName: station.name,
-      sido: station.sido,
-      sigungu: station.sigungu,
-      ...counts,
-      ...metricFields(counts, updatedAt),
-      updatedAt
-    };
-  });
+  const sidoMetrics = Array.from(new Set(stationMetrics.map((metric) => metric.sido))).map((sido) =>
+    regionMetric(`sido:${sido}`, sido, stationMetrics.filter((metric) => metric.sido === sido))
+  );
 
-  const sidoNames = Array.from(new Set(stations.map((station) => station.sido)));
-  const sidoMetrics = sidoNames.map((sido) => {
-    const regionStations = stations.filter((station) => station.sido === sido);
-    const stationIds = new Set(regionStations.map((station) => station.id));
-    return buildRegionMetric(`sido:${sido}`, regionStations, chargers.filter((charger) => stationIds.has(charger.stationId)), sido);
-  });
-
-  const sigunguKeys = Array.from(new Set(stations.map((station) => `${station.sido}|${station.sigungu}`)));
-  const sigunguMetrics = sigunguKeys.map((key) => {
+  const sigunguMetrics = Array.from(new Set(stationMetrics.map((metric) => `${metric.sido}|${metric.sigungu}`))).map((key) => {
     const [sido, sigungu] = key.split("|");
-    const regionStations = stations.filter((station) => station.sido === sido && station.sigungu === sigungu);
-    const stationIds = new Set(regionStations.map((station) => station.id));
-    return buildRegionMetric(`sigungu:${sido}:${sigungu}`, regionStations, chargers.filter((charger) => stationIds.has(charger.stationId)), sido, sigungu);
+    return regionMetric(
+      `sigungu:${sido}:${sigungu}`,
+      sido,
+      stationMetrics.filter((metric) => metric.sido === sido && metric.sigungu === sigungu),
+      sigungu
+    );
   });
 
-  const national = buildRegionMetric("national", stations, chargers, "전국");
-  return { stations, chargers, national, sidoMetrics, sigunguMetrics, stationMetrics, lastUpdatedAt: national.updatedAt };
+  const national = regionMetric("national", "전국", stationMetrics);
+  return { stations, readings, national, sidoMetrics, sigunguMetrics, stationMetrics, lastMeasuredAt: national.measuredAt };
 }

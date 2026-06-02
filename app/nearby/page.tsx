@@ -1,48 +1,43 @@
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { NearbyStationFinder } from "@/components/location/NearbyStationFinder";
+import { NearbyAirStationFinder } from "@/components/location/NearbyAirStationFinder";
 import { getDashboardDataset } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "내 주변 전기차 충전소 | 위치 기반 충전 가능률 분석",
-  description: "브라우저 현재 위치를 기준으로 가까운 전기차 충전소와 충전 가능률을 확인합니다."
+  title: "내 주변 미세먼지 측정소 | 위치 기반 환기 점수",
+  description: "브라우저 현재 위치 기준 가까운 미세먼지 측정소와 환기 점수를 확인합니다."
 };
 
 export default async function NearbyPage() {
   const data = await getDashboardDataset();
-  const stationLocations = data.stations.map(({ id, name, address, sido, sigungu, latitude, longitude, operator }) => ({
+  const stations = data.stations.map(({ id, name, address, sido, sigungu, latitude, longitude }) => ({
     id,
     name,
     address,
     sido,
     sigungu,
     latitude,
-    longitude,
-    operator
+    longitude
   }));
-  const locationMetrics = data.stationMetrics.map(
-    ({ stationId, availabilityRate, congestionRate, fastChargerRate, chargingOpportunityScore, availableChargers, totalChargers }) => ({
-      stationId,
-      availabilityRate,
-      congestionRate,
-      fastChargerRate,
-      chargingOpportunityScore,
-      availableChargers,
-      totalChargers
-    })
-  );
+  const metrics = data.stationMetrics.map(({ stationId, pm10, pm25, ventilationScore, ventilationStatus }) => ({
+    stationId,
+    pm10,
+    pm25,
+    ventilationScore,
+    ventilationStatus
+  }));
 
   return (
-    <DashboardShell title="내 주변 전기차 충전소" description="현재 위치 또는 모의 위치 기준으로 가까운 충전소를 거리순으로 정렬합니다.">
+    <DashboardShell title="내 주변 미세먼지 측정소" description="현재 위치 또는 모의 위치 기준으로 가까운 측정소를 거리순으로 정렬합니다.">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-        <NearbyStationFinder stations={stationLocations} metrics={locationMetrics} limit={16} />
+        <NearbyAirStationFinder stations={stations} metrics={metrics} limit={16} />
         <aside className="space-y-6">
           <AdSlot slotId="nearby-side" minHeight={260} />
           <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-            <h2 className="text-lg font-semibold text-slate-950">위치 데이터 안내</h2>
+            <h2 className="text-lg font-semibold text-slate-950">목데이터 안내</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              현재 버전은 mock 충전소 좌표를 사용합니다. 실제 공공 API 연결 후에는 수집된 위도와 경도를 기준으로 같은 계산을 적용합니다.
+              현재 버전은 mock 측정소 좌표와 대기질 값을 사용합니다. 실제 API 연결 후에도 같은 거리 계산과 환기 점수 공식을 적용합니다.
             </p>
           </section>
         </aside>

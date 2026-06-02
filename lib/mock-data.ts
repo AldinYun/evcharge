@@ -1,7 +1,7 @@
-import { aggregateDataset } from "@/lib/pipeline/aggregator";
-import type { Charger, ChargerStatus, DashboardDataset, Station } from "@/lib/types";
+import { aggregateAirDataset } from "@/lib/pipeline/aggregator";
+import type { AirDashboardDataset, AirQualityReading, MonitoringStation } from "@/lib/types";
 
-const regionSeed = [
+const regions = [
   ["서울", ["강남구", "마포구", "송파구", "종로구", "영등포구"]],
   ["부산", ["해운대구", "수영구", "동래구", "부산진구"]],
   ["대구", ["수성구", "달서구", "중구", "북구"]],
@@ -21,69 +21,55 @@ const regionSeed = [
   ["제주", ["제주시", "서귀포시"]]
 ] as const;
 
-const statuses: ChargerStatus[] = ["available", "charging", "reserved", "maintenance", "fault", "unknown"];
-
-function pickStatus(index: number): ChargerStatus {
-  const weighted: ChargerStatus[] = [
-    "available",
-    "available",
-    "available",
-    "charging",
-    "charging",
-    "reserved",
-    "maintenance",
-    "fault",
-    "unknown"
-  ];
-  return weighted[index % weighted.length] ?? statuses[index % statuses.length];
-}
-
-export function createMockStationsAndChargers() {
-  const stations: Station[] = [];
-  const chargers: Charger[] = [];
+export function createMockAirData() {
+  const stations: MonitoringStation[] = [];
+  const readings: AirQualityReading[] = [];
   const now = new Date();
-  let stationIndex = 0;
+  let index = 0;
 
-  for (const [sido, sigungus] of regionSeed) {
+  for (const [sido, sigungus] of regions) {
     for (const sigungu of sigungus) {
-      for (let local = 0; local < 4; local += 1) {
-        stationIndex += 1;
-        const stationId = `ST-${stationIndex.toString().padStart(4, "0")}`;
-        const updatedAt = new Date(now.getTime() - ((stationIndex * 7) % 240) * 60000);
+      for (let local = 0; local < 3; local += 1) {
+        index += 1;
+        const id = `AIR-${index.toString().padStart(4, "0")}`;
+        const pmSeed = (index * 17 + local * 13) % 135;
+        const pm10 = 18 + pmSeed;
+        const pm25 = 8 + Math.round(pmSeed * 0.47);
+        const humidity = 34 + ((index * 11) % 52);
+        const windSpeed = 1 + ((index * 7) % 130) / 10;
+        const measuredAt = new Date(now.getTime() - ((index * 9) % 210) * 60000);
+
         stations.push({
-          id: stationId,
-          name: `${sido} ${sigungu} 충전스테이션 ${local + 1}`,
-          address: `${sido} ${sigungu} 친환경로 ${100 + stationIndex}`,
+          id,
+          name: `${sido} ${sigungu} 측정소 ${local + 1}`,
           sido,
           sigungu,
-          latitude: 33.2 + ((stationIndex * 37) % 600) / 100,
-          longitude: 126.2 + ((stationIndex * 29) % 500) / 100,
-          operator: stationIndex % 3 === 0 ? "한국전력" : stationIndex % 3 === 1 ? "환경공단" : "민간사업자",
-          updatedAt
+          address: `${sido} ${sigungu} 맑은공기로 ${100 + index}`,
+          latitude: 33.2 + ((index * 37) % 600) / 100,
+          longitude: 126.2 + ((index * 29) % 500) / 100
         });
 
-        const chargerCount = 5 + (stationIndex % 5);
-        for (let chargerLocal = 0; chargerLocal < chargerCount; chargerLocal += 1) {
-          const chargerIndex = chargers.length + 1;
-          const speed = chargerIndex % 4 === 0 || chargerIndex % 7 === 0 ? "fast" : "slow";
-          chargers.push({
-            id: `CH-${chargerIndex.toString().padStart(5, "0")}`,
-            stationId,
-            status: pickStatus(chargerIndex + stationIndex),
-            speed,
-            type: speed === "fast" ? "DC Combo" : "AC Slow",
-            outputKw: speed === "fast" ? 100 + (chargerIndex % 3) * 50 : 7,
-            updatedAt: new Date(updatedAt.getTime() - (chargerLocal % 3) * 600000)
-          });
-        }
+        readings.push({
+          id: `READ-${index.toString().padStart(5, "0")}`,
+          stationId: id,
+          measuredAt,
+          pm10,
+          pm25,
+          o3: 0.018 + ((index * 3) % 60) / 1000,
+          no2: 0.01 + ((index * 5) % 45) / 1000,
+          co: 0.3 + ((index * 2) % 9) / 10,
+          so2: 0.002 + ((index * 2) % 12) / 1000,
+          humidity,
+          windSpeed
+        });
       }
     }
   }
 
-  return { stations, chargers };
+  return { stations, readings };
 }
 
-export function getMockDashboardDataset(): DashboardDataset {
-  const { stations, chargers } = createMockStationsAndChargers();
-  return aggregateDataset(stations, chargers);
+export function getMockAirDashboardDataset(): AirDashboardDataset {
+  const { stations, readings } = createMockAirData();
+  return aggregateAirDataset(stations, readings);
 }

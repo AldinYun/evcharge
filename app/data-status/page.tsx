@@ -6,21 +6,21 @@ import { getPipelineStatus } from "@/lib/data";
 import { dateTime, number } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "전기차 충전소 데이터 갱신 상태",
-  description: "최근 데이터 수집 상태, 성공/실패 시각, 수집량, 파이프라인 상태"
+  title: "미세먼지 데이터 갱신 상태",
+  description: "최근 대기질 데이터 수집 상태, 성공/실패 시각, 수집량, 파이프라인 상태"
 };
 
 export default async function DataStatusPage() {
   const status = await getPipelineStatus();
 
   return (
-    <DashboardShell title="전기차 충전소 데이터 갱신 상태" description="collector, normalizer, save, aggregate, cache 단계의 mock 파이프라인 상태입니다.">
+    <DashboardShell title="미세먼지 데이터 갱신 상태" description="collector, normalizer, save, aggregate, cache 단계의 mock 파이프라인 상태입니다.">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="파이프라인 상태" value={status.status === "healthy" ? "정상" : "확인 필요"} tone="good" helper={status.message} />
         <MetricCard label="마지막 성공 시각" value={dateTime(status.lastSuccessAt)} />
         <MetricCard label="마지막 실패 시각" value={dateTime(status.lastFailureAt)} tone="warn" />
-        <MetricCard label="수집된 충전소 수" value={number(status.stationCount)} />
-        <MetricCard label="수집된 충전기 수" value={number(status.chargerCount)} />
+        <MetricCard label="측정소 수" value={number(status.stationCount)} />
+        <MetricCard label="수집 샘플 수" value={number(status.sampleCount)} />
       </section>
 
       <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-soft">

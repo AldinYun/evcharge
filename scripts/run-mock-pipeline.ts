@@ -1,6 +1,6 @@
-import { runEvStatusPipeline } from "@/lib/pipeline";
+import { runAirQualityPipeline } from "@/lib/pipeline";
 
-runEvStatusPipeline()
+runAirQualityPipeline()
   .then((result) => {
     console.log(JSON.stringify(result, null, 2));
   })
