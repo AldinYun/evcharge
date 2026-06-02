@@ -19,9 +19,6 @@ export function DashboardShell({ children, title, description }: { children: Rea
             <Link className="rounded-md border border-slate-200 bg-white px-3 py-2" href="/rankings">
               순위
             </Link>
-            <Link className="rounded-md border border-slate-200 bg-white px-3 py-2" href="/data-status">
-              데이터 상태
-            </Link>
           </nav>
         </div>
       </header>

@@ -85,7 +85,7 @@ curl -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/air-status
 관리자 통계 화면:
 
 ```text
-http://서버IP:3000/data-status?secret=관리자_비밀값
+http://서버IP:3000/admin?secret=관리자_비밀값
 ```
 
 ## 업데이트

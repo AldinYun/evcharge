@@ -122,5 +122,5 @@ Docker 구성은 PostgreSQL 16, Prisma migration, mock pipeline 자동 실행을
 - `/region/[sido]`: 지역별 미세먼지·환기 분석
 - `/nearby`: 위치 기반 가까운 측정소
 - `/rankings`: 전국 지역 순위
-- `/data-status`: 데이터 수집 상태
+- `/admin`: 관리자 수집 상태와 접근 통계
 - `/api/cron/air-status`: cron 파이프라인 실행 API
