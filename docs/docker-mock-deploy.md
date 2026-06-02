@@ -24,9 +24,11 @@ newgrp docker
 
 ## 배포
 
+저장소 이름은 기존 GitHub repo 이름을 그대로 사용합니다.
+
 ```bash
-git clone https://github.com/AldinYun/evcharge.git
-cd evcharge
+git clone https://github.com/AldinYun/evcharge.git airvent-guide
+cd airvent-guide
 docker compose up -d --build
 ```
 
@@ -36,13 +38,13 @@ docker compose up -d --build
 http://서버IP:3000
 ```
 
-## 포함되는 것
+## Docker 구성
 
-- Next.js production app
-- PostgreSQL 16
-- Prisma migration 자동 실행
-- 컨테이너 시작 시 mock 미세먼지 pipeline 자동 실행
-- 실제 API 없이 mock collector 사용
+- 앱 컨테이너: `airvent-app`
+- DB 컨테이너: `airvent-postgres`
+- DB 이름: `airvent`
+- DB 사용자: `airvent`
+- DB 볼륨: `airvent-postgres-data`
 
 ## 실제 AirKorea API 사용
 
@@ -50,12 +52,14 @@ http://서버IP:3000
 
 ```yaml
 environment:
+  DATABASE_URL: postgresql://airvent:airvent_password@postgres:5432/airvent
   AIR_API_BASE_URL: "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
   AIR_STATION_API_BASE_URL: "https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
+  AIR_FETCH_STATION_INFO: "true"
   AIR_API_KEY: "공공데이터포털_인증키"
 ```
 
-기능별 일일 트래픽 500 기준으로, 대기오염정보 전국 1회 수집은 17개 시도 기준 17콜입니다. 1시간 주기면 하루 408콜이라 안전합니다. 측정소정보는 좌표/주소 보강용이라 운영에서는 하루 1회 이하 별도 갱신 구조를 권장합니다.
+기능별 일일 트래픽 500 기준으로, 대기오염정보 전국 1회 수집은 17개 시도 기준 17콜입니다. 1시간 주기면 하루 408콜이라 안전합니다.
 
 ## 상태 확인
 

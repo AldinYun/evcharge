@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "evcharge",
+      name: "airvent-guide",
       script: "node_modules/next/dist/bin/next",
       args: "start --hostname 127.0.0.1 --port 3000",
       cwd: __dirname,

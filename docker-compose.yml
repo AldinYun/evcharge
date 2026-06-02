@@ -1,16 +1,16 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: evcharge-postgres
+    container_name: airvent-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: evcharge
-      POSTGRES_PASSWORD: evcharge_password
-      POSTGRES_DB: evcharge
+      POSTGRES_USER: airvent
+      POSTGRES_PASSWORD: airvent_password
+      POSTGRES_DB: airvent
     volumes:
-      - evcharge-postgres-data:/var/lib/postgresql/data
+      - airvent-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U evcharge -d evcharge"]
+      test: ["CMD-SHELL", "pg_isready -U airvent -d airvent"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -19,13 +19,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: evcharge-app
+    container_name: airvent-app
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://evcharge:evcharge_password@postgres:5432/evcharge
+      DATABASE_URL: postgresql://airvent:airvent_password@postgres:5432/airvent
       AIR_API_BASE_URL: "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
       AIR_STATION_API_BASE_URL: "https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
       AIR_FETCH_STATION_INFO: "true"
@@ -37,4 +37,4 @@ services:
       - "3000:3000"
 
 volumes:
-  evcharge-postgres-data:
+  airvent-postgres-data:

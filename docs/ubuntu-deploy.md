@@ -1,8 +1,8 @@
 # Ubuntu Deployment Guide
 
-Docker를 쓰지 않는 수동 배포 절차입니다. 목버전은 `docs/docker-mock-deploy.md`의 Docker Compose 방식을 권장합니다.
+Docker를 쓰지 않는 수동 배포 절차입니다. 목버전/간편 배포는 `docs/docker-mock-deploy.md`의 Docker Compose 방식을 권장합니다.
 
-## 1. 서버 패키지 설치
+## 1. 패키지 설치
 
 ```bash
 sudo apt update
@@ -19,18 +19,20 @@ sudo -u postgres psql
 ```
 
 ```sql
-CREATE USER evcharge WITH PASSWORD 'change-me';
-CREATE DATABASE evcharge OWNER evcharge;
+CREATE USER airvent WITH PASSWORD 'change-me';
+CREATE DATABASE airvent OWNER airvent;
 \q
 ```
 
 ## 3. 소스 배치
 
+저장소 이름은 기존 GitHub repo 이름을 그대로 사용합니다.
+
 ```bash
 sudo mkdir -p /var/www
 sudo chown "$USER":"$USER" /var/www
-git clone https://github.com/AldinYun/evcharge.git /var/www/evcharge
-cd /var/www/evcharge
+git clone https://github.com/AldinYun/evcharge.git /var/www/airvent-guide
+cd /var/www/airvent-guide
 npm ci
 ```
 
@@ -42,15 +44,16 @@ nano .env
 ```
 
 ```env
-DATABASE_URL="postgresql://evcharge:change-me@127.0.0.1:5432/evcharge"
+DATABASE_URL="postgresql://airvent:change-me@127.0.0.1:5432/airvent"
 AIR_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
 AIR_STATION_API_BASE_URL="https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
+AIR_FETCH_STATION_INFO="true"
 AIR_API_KEY=
 CRON_SECRET="strong-random-secret"
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=
 ```
 
-`AIR_API_BASE_URL`, `AIR_API_KEY`가 비어 있으면 mock collector로 동작합니다.
+`AIR_API_KEY`가 비어 있으면 mock collector로 동작합니다.
 
 ## 5. Prisma migration 및 빌드
 
@@ -88,6 +91,8 @@ server {
 ```
 
 ## 8. Cron 등록
+
+기능별 일일 500콜 기준, 전국 대기오염정보는 1시간 주기를 권장합니다.
 
 ```cron
 0 * * * * curl -fsS -H "x-cron-secret: strong-random-secret" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
