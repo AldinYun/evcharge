@@ -107,3 +107,15 @@ npm run prisma:deploy
 npm run build
 pm2 start ecosystem.config.cjs
 ```
+
+## Docker mock deployment
+
+앱과 PostgreSQL을 한 번에 띄우는 목버전 배포는 `docs/docker-mock-deploy.md`를 사용합니다.
+
+```bash
+git clone https://github.com/AldinYun/evcharge.git
+cd evcharge
+docker compose up -d --build
+```
+
+이 구성은 PostgreSQL 16, Prisma migration, mock pipeline 실행을 함께 처리합니다.

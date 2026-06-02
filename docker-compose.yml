@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: evcharge-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evcharge
+      POSTGRES_PASSWORD: evcharge_password
+      POSTGRES_DB: evcharge
+    volumes:
+      - evcharge-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evcharge -d evcharge"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: evcharge-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://evcharge:evcharge_password@postgres:5432/evcharge
+      EV_API_BASE_URL: ""
+      EV_API_KEY: ""
+      CRON_SECRET: change-me
+      NEXT_PUBLIC_ADSENSE_CLIENT_ID: ""
+      RUN_MOCK_PIPELINE_ON_START: "true"
+    ports:
+      - "3000:3000"
+
+volumes:
+  evcharge-postgres-data:
