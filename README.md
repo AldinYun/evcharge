@@ -32,6 +32,12 @@ npm run prisma:generate
 npm run prisma:migrate
 ```
 
+운영 서버에서는 다음 명령을 사용합니다.
+
+```bash
+npm run prisma:deploy
+```
+
 `prisma/schema.prisma`에는 `Station`, `Charger`, `ChargerStatusSnapshot`, `RegionMetric`, `StationMetric`, `RawEvApiResponse`, `PipelineRun` 모델이 포함되어 있습니다.
 
 ## Mock pipeline 실행
@@ -88,3 +94,16 @@ curl -H "x-cron-secret: $CRON_SECRET" http://localhost:3000/api/cron/ev-status
 - 관리자용 수집 로그 상세 화면
 - 지역별 지도 및 좌표 기반 주변 충전소 탐색
 - 장애 상태 장기 추세 분석
+
+## Ubuntu 배포
+
+Ubuntu 서버 배포 절차는 `docs/ubuntu-deploy.md`에 정리되어 있습니다.
+
+핵심 흐름:
+
+```bash
+npm ci
+npm run prisma:deploy
+npm run build
+pm2 start ecosystem.config.cjs
+```
