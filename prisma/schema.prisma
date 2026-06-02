@@ -109,3 +109,14 @@ model PipelineRun {
   sampleCount  Int       @default(0)
   errorMessage String?
 }
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}

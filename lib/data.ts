@@ -100,3 +100,32 @@ export async function getPipelineStatus() {
     message: "Mock AirKorea collector 기준 정상 수집 대기"
   };
 }
+
+export async function getAccessAnalytics() {
+  noStore();
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  try {
+    const [totalViews, views24h, views7d, topPages] = await Promise.all([
+      prisma.pageView.count(),
+      prisma.pageView.count({ where: { createdAt: { gte: since24h } } }),
+      prisma.pageView.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.pageView.groupBy({
+        by: ["path"],
+        _count: { path: true },
+        orderBy: { _count: { path: "desc" } },
+        take: 10
+      })
+    ]);
+
+    return {
+      totalViews,
+      views24h,
+      views7d,
+      topPages: topPages.map((page) => ({ path: page.path, count: page._count.path }))
+    };
+  } catch {
+    return { totalViews: 0, views24h: 0, views7d: 0, topPages: [] };
+  }
+}

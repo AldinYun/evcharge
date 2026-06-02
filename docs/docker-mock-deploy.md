@@ -57,6 +57,7 @@ environment:
   AIR_STATION_API_BASE_URL: "https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
   AIR_FETCH_STATION_INFO: "true"
   AIR_API_KEY: "공공데이터포털_인증키"
+  ADMIN_SECRET: "관리자_비밀값"
 ```
 
 기능별 일일 트래픽 500 기준으로, 대기오염정보 전국 1회 수집은 17개 시도 기준 17콜입니다. 1시간 주기면 하루 408콜이라 안전합니다.
@@ -79,6 +80,12 @@ docker compose exec app npm run pipeline:mock
 
 ```bash
 curl -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/air-status
+```
+
+관리자 통계 화면:
+
+```text
+http://서버IP:3000/data-status?secret=관리자_비밀값
 ```
 
 ## 업데이트

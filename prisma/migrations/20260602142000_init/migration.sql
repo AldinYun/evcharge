@@ -95,9 +95,21 @@ CREATE TABLE "PipelineRun" (
     CONSTRAINT "PipelineRun_pkey" PRIMARY KEY ("id")
 );
 
+CREATE TABLE "PageView" (
+    "id" TEXT NOT NULL,
+    "path" TEXT NOT NULL,
+    "referrer" TEXT,
+    "userAgent" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PageView_pkey" PRIMARY KEY ("id")
+);
+
 CREATE INDEX "MonitoringStation_sido_sigungu_idx" ON "MonitoringStation"("sido", "sigungu");
 CREATE INDEX "AirQualityReading_stationId_measuredAt_idx" ON "AirQualityReading"("stationId", "measuredAt");
 CREATE INDEX "AirQualityReading_measuredAt_idx" ON "AirQualityReading"("measuredAt");
 CREATE INDEX "AirRegionMetric_sido_sigungu_idx" ON "AirRegionMetric"("sido", "sigungu");
+CREATE INDEX "PageView_path_idx" ON "PageView"("path");
+CREATE INDEX "PageView_createdAt_idx" ON "PageView"("createdAt");
 
 ALTER TABLE "AirQualityReading" ADD CONSTRAINT "AirQualityReading_stationId_fkey" FOREIGN KEY ("stationId") REFERENCES "MonitoringStation"("id") ON DELETE CASCADE ON UPDATE CASCADE;

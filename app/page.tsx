@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RegionInsightCard } from "@/components/dashboard/RegionInsightCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { NearbyAirStationFinder } from "@/components/location/NearbyAirStationFinder";
+import { RegionSelectNavigator } from "@/components/region/RegionSelectNavigator";
 import { AirRankingTable } from "@/components/tables/AirRankingTable";
 import { getDashboardDataset } from "@/lib/data";
 import { dateTime, microgram, number, ventilationStatusLabel } from "@/lib/format";
@@ -51,6 +52,7 @@ export default async function HomePage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
+          <RegionSelectNavigator regions={data.sigunguMetrics} />
           <NearbyAirStationFinder stations={stationLocations} metrics={locationMetrics} limit={6} />
           <AdSlot slotId="home-mid" minHeight={140} />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

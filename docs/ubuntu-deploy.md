@@ -50,6 +50,7 @@ AIR_STATION_API_BASE_URL="https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
 AIR_FETCH_STATION_INFO="true"
 AIR_API_KEY=
 CRON_SECRET="strong-random-secret"
+ADMIN_SECRET="strong-admin-secret"
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=
 ```
 

@@ -31,6 +31,7 @@ services:
       AIR_FETCH_STATION_INFO: "true"
       AIR_API_KEY: ""
       CRON_SECRET: change-me
+      ADMIN_SECRET: change-me-admin
       NEXT_PUBLIC_ADSENSE_CLIENT_ID: ""
       RUN_MOCK_PIPELINE_ON_START: "true"
     ports:
