@@ -90,5 +90,5 @@ server {
 ## 8. Cron 등록
 
 ```cron
-0 */2 * * * curl -fsS -H "x-cron-secret: strong-random-secret" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
+0 * * * * curl -fsS -H "x-cron-secret: strong-random-secret" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
 ```

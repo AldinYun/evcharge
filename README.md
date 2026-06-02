@@ -27,6 +27,7 @@ npm run dev
 DATABASE_URL="postgresql://user:password@localhost:5432/evcharge"
 AIR_API_BASE_URL=
 AIR_STATION_API_BASE_URL=
+AIR_FETCH_STATION_INFO="true"
 AIR_API_KEY=
 CRON_SECRET="change-me"
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=
@@ -39,6 +40,7 @@ NEXT_PUBLIC_ADSENSE_CLIENT_ID=
 ```env
 AIR_API_BASE_URL="https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
 AIR_STATION_API_BASE_URL="https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
+AIR_FETCH_STATION_INFO="true"
 AIR_API_KEY="공공데이터포털_인증키"
 ```
 
@@ -47,7 +49,15 @@ collector는 자동으로 다음 엔드포인트를 호출합니다.
 - 대기오염정보: `getCtprvnRltmMesureDnsty`
 - 측정소정보: `getMsrstnList`
 
-전국 17개 시도 기준 1회 수집은 측정소정보 17콜 + 대기오염정보 17콜, 총 약 34콜입니다. 일일 트래픽 500이면 2시간 주기, 하루 12회 수집이 약 408콜이라 안전합니다.
+공공데이터포털 트래픽이 기능별 500콜이면 대기오염정보와 측정소정보 한도가 분리됩니다.
+
+- 대기오염정보 1회 전국 수집: 17개 시도 기준 17콜
+- 1시간 주기: 17콜 x 24회 = 408콜
+- 30분 주기: 17콜 x 48회 = 816콜
+
+따라서 전국 전체 수집은 1시간 주기를 권장합니다. 측정소정보는 좌표/주소 보강용이라 운영에서는 하루 1회 이하로 별도 갱신하는 구조가 가장 좋습니다.
+
+`AIR_FETCH_STATION_INFO="false"`로 설정하면 측정소정보 호출을 건너뛰고 대기오염정보만 호출합니다.
 
 ## Prisma
 
@@ -82,10 +92,10 @@ DB 저장이 실패해도 mock 수집과 집계가 완료되면 `partial_success
 curl -H "x-cron-secret: change-me" http://localhost:3000/api/cron/air-status
 ```
 
-일일 트래픽 500 기준 권장 cron:
+기능별 일일 트래픽 500 기준 권장 cron:
 
 ```cron
-0 */2 * * * curl -fsS -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
+0 * * * * curl -fsS -H "x-cron-secret: change-me" http://127.0.0.1:3000/api/cron/air-status >/dev/null 2>&1
 ```
 
 ## Docker 목버전 배포

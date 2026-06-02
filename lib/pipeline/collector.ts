@@ -111,6 +111,7 @@ export async function collectAirApiData(): Promise<CollectResult> {
   const baseUrl = process.env.AIR_API_BASE_URL;
   const stationBaseUrl = process.env.AIR_STATION_API_BASE_URL;
   const apiKey = process.env.AIR_API_KEY;
+  const shouldFetchStationInfo = process.env.AIR_FETCH_STATION_INFO !== "false";
 
   if (!baseUrl || !apiKey) {
     const stations = mockExternalStations();
@@ -122,7 +123,7 @@ export async function collectAirApiData(): Promise<CollectResult> {
   const stationInfoBySidoName = new Map<string, AirKoreaStationItem>();
 
   for (const sidoName of sidoNames) {
-    if (stationBaseUrl) {
+    if (stationBaseUrl && shouldFetchStationInfo) {
       const stationInfo = await fetchAirKoreaItems<AirKoreaStationItem>(stationBaseUrl, "getMsrstnList", apiKey, {
         addr: sidoName,
         numOfRows: "1000",
