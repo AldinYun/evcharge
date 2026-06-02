@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ChargerStatus {
+  available
+  charging
+  reserved
+  maintenance
+  fault
+  unknown
+}
+
+enum ChargerSpeed {
+  fast
+  slow
+}
+
+model Station {
+  id        String    @id
+  name      String
+  address   String
+  sido      String
+  sigungu   String
+  latitude  Float
+  longitude Float
+  operator  String
+  updatedAt DateTime
+  chargers  Charger[]
+
+  @@index([sido, sigungu])
+}
+
+model Charger {
+  id        String                  @id
+  stationId String
+  status    ChargerStatus
+  speed     ChargerSpeed
+  type      String
+  outputKw  Float
+  updatedAt DateTime
+  station   Station                 @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  snapshots ChargerStatusSnapshot[]
+
+  @@index([stationId])
+  @@index([status])
+}
+
+model ChargerStatusSnapshot {
+  id         String        @id @default(cuid())
+  chargerId  String
+  status     ChargerStatus
+  capturedAt DateTime
+  charger    Charger       @relation(fields: [chargerId], references: [id], onDelete: Cascade)
+
+  @@index([chargerId, capturedAt])
+}
+
+model RegionMetric {
+  id                       String   @id
+  sido                     String
+  sigungu                  String?
+  stationCount             Int
+  totalChargers            Int
+  availableChargers        Int
+  chargingChargers         Int
+  reservedChargers         Int
+  maintenanceChargers      Int
+  faultChargers            Int
+  unknownChargers          Int
+  fastChargers             Int
+  slowChargers             Int
+  availabilityRate         Float
+  congestionRate           Float
+  faultRate                Float
+  fastChargerRate          Float
+  reliabilityScore         Float
+  freshnessScore           Float
+  chargingOpportunityScore Int
+  updatedAt                DateTime
+
+  @@index([sido, sigungu])
+}
+
+model StationMetric {
+  stationId                String   @id
+  stationName              String
+  sido                     String
+  sigungu                  String
+  totalChargers            Int
+  availableChargers        Int
+  chargingChargers         Int
+  reservedChargers         Int
+  maintenanceChargers      Int
+  faultChargers            Int
+  unknownChargers          Int
+  fastChargers             Int
+  slowChargers             Int
+  availabilityRate         Float
+  congestionRate           Float
+  faultRate                Float
+  fastChargerRate          Float
+  reliabilityScore         Float
+  freshnessScore           Float
+  chargingOpportunityScore Int
+  updatedAt                DateTime
+}
+
+model RawEvApiResponse {
+  id        String   @id @default(cuid())
+  payload   Json
+  createdAt DateTime @default(now())
+}
+
+model PipelineRun {
+  id           String    @id @default(cuid())
+  status       String
+  startedAt    DateTime
+  finishedAt   DateTime?
+  stationCount Int       @default(0)
+  chargerCount Int       @default(0)
+  errorMessage String?
+}
