@@ -78,6 +78,7 @@ export type AirDashboardDataset = {
   sigunguMetrics: AirRegionMetric[];
   stationMetrics: StationAirMetric[];
   lastMeasuredAt: Date;
+  lastCollectedAt?: Date;
 };
 
 export type ExternalAirStation = {

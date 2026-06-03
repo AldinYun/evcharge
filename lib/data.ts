@@ -6,7 +6,13 @@ import { aggregateAirDataset } from "@/lib/pipeline/aggregator";
 import type { AirQualityReading, MonitoringStation } from "@/lib/types";
 
 async function getDatabaseDashboardDataset() {
-  const stations = await prisma.monitoringStation.findMany();
+  const [stations, lastPipelineRun] = await Promise.all([
+    prisma.monitoringStation.findMany(),
+    prisma.pipelineRun.findFirst({
+      where: { status: { in: ["success", "partial_success"] } },
+      orderBy: { finishedAt: "desc" }
+    })
+  ]);
   if (stations.length === 0) return null;
 
   const readings = await prisma.airQualityReading.findMany({
@@ -48,7 +54,11 @@ async function getDatabaseDashboardDataset() {
     .filter((reading): reading is AirQualityReading => reading !== undefined);
 
   if (latestReadings.length === 0) return null;
-  return aggregateAirDataset(normalizedStations, latestReadings);
+  const dataset = aggregateAirDataset(normalizedStations, latestReadings);
+  return {
+    ...dataset,
+    lastCollectedAt: lastPipelineRun?.finishedAt ?? lastPipelineRun?.startedAt ?? dataset.lastMeasuredAt
+  };
 }
 
 export async function getDashboardDataset() {
