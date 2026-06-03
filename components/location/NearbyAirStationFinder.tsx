@@ -97,7 +97,11 @@ function accuracyText(accuracy?: number) {
 }
 
 function coordinateText(location: UserLocation) {
-  return `감지 좌표 ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`;
+  return `브라우저 감지 좌표 ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`;
+}
+
+function stationCoordinateText(station: Station) {
+  return `측정소 좌표 ${station.latitude.toFixed(5)}, ${station.longitude.toFixed(5)}`;
 }
 
 export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stations: Station[]; metrics: Metric[]; limit?: number }) {
@@ -126,6 +130,7 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
 
   const requestLocation = () => {
     clearSavedLocation();
+    setLocation(null);
 
     if (!isLocationAllowedOrigin()) {
       setStatus("브라우저 위치 기능은 HTTPS 또는 localhost에서만 동작합니다. https://aircheck.kr 주소로 접속해 주세요.");
@@ -208,6 +213,7 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
                 {nearest.station.sido} {nearest.station.sigungu}
               </div>
               <div className="mt-1 text-sm text-slate-600">{nearest.station.name}</div>
+              <div className="mt-1 text-xs text-slate-500">{stationCoordinateText(nearest.station)}</div>
             </div>
             <div className="text-sm font-bold text-teal-700">{nearest.distance.toFixed(1)}km</div>
           </div>
