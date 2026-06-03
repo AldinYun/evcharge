@@ -37,7 +37,7 @@ services:
       NEXT_PUBLIC_ADSENSE_CLIENT_ID: ""
       RUN_MOCK_PIPELINE_ON_START: "true"
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
 
   caddy:
     image: caddy:2-alpine
