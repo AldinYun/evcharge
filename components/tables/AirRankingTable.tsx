@@ -24,8 +24,8 @@ export function AirRankingTable({ regions, metric, title }: { regions: AirRegion
               <th className="py-3 pr-3">순위</th>
               <th className="py-3 pr-3">지역</th>
               <th className="py-3 pr-3">지표</th>
-              <th className="py-3 pr-3">PM10</th>
-              <th className="py-3 pr-3">PM2.5</th>
+              <th className="py-3 pr-3">미세먼지</th>
+              <th className="py-3 pr-3">초미세먼지</th>
               <th className="py-3">환기 상태</th>
             </tr>
           </thead>
@@ -57,8 +57,8 @@ export function AirRankingTable({ regions, metric, title }: { regions: AirRegion
               <div className="text-sm font-bold text-teal-700">{value(region)}</div>
             </div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-slate-600">
-              <span>PM10 {microgram(region.avgPm10)}</span>
-              <span>PM2.5 {microgram(region.avgPm25)}</span>
+              <span>미세먼지 {microgram(region.avgPm10)}</span>
+              <span>초미세먼지 {microgram(region.avgPm25)}</span>
               <span>{ventilationStatusLabel(region.ventilationStatus)}</span>
             </div>
           </Link>

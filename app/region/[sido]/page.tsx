@@ -31,8 +31,8 @@ export default async function RegionPage({ params }: PageProps) {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <MetricCard label="환기 점수" value={`${region.ventilationScore}점`} tone={region.ventilationScore >= 70 ? "good" : "warn"} />
         <MetricCard label="환기 상태" value={ventilationStatusLabel(region.ventilationStatus)} tone={region.ventilationStatus === "recommended" ? "good" : "warn"} />
-        <MetricCard label="PM10" value={microgram(region.avgPm10)} />
-        <MetricCard label="PM2.5" value={microgram(region.avgPm25)} tone={region.avgPm25 > 35 ? "bad" : "default"} />
+        <MetricCard label="미세먼지" value={microgram(region.avgPm10)} />
+        <MetricCard label="초미세먼지" value={microgram(region.avgPm25)} tone={region.avgPm25 > 35 ? "bad" : "default"} />
         <MetricCard label="측정 시각" value={dateTime(region.measuredAt)} />
       </section>
 

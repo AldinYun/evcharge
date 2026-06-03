@@ -30,8 +30,8 @@ export default async function SigunguPage({ params }: PageProps) {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <MetricCard label="환기 점수" value={`${region.ventilationScore}점`} tone={region.ventilationScore >= 70 ? "good" : "warn"} />
         <MetricCard label="환기 상태" value={ventilationStatusLabel(region.ventilationStatus)} tone={region.ventilationStatus === "recommended" ? "good" : "warn"} />
-        <MetricCard label="PM10" value={microgram(region.avgPm10)} />
-        <MetricCard label="PM2.5" value={microgram(region.avgPm25)} tone={region.avgPm25 > 35 ? "bad" : "default"} />
+        <MetricCard label="미세먼지" value={microgram(region.avgPm10)} />
+        <MetricCard label="초미세먼지" value={microgram(region.avgPm25)} tone={region.avgPm25 > 35 ? "bad" : "default"} />
         <MetricCard label="측정소 수" value={`${region.stationCount}곳`} />
       </section>
 
@@ -49,8 +49,8 @@ export default async function SigunguPage({ params }: PageProps) {
                   <div className="text-sm font-bold text-teal-700">{station.ventilationScore}점</div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
-                  <span>PM10 {microgram(station.pm10)}</span>
-                  <span>PM2.5 {microgram(station.pm25)}</span>
+                  <span>미세먼지 {microgram(station.pm10)}</span>
+                  <span>초미세먼지 {microgram(station.pm25)}</span>
                   <span>{ventilationStatusLabel(station.ventilationStatus)}</span>
                 </div>
               </div>

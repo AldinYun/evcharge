@@ -6,7 +6,7 @@ export function InfoPage({ title, description, children }: { title: string; desc
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-3xl px-4 py-6">
           <Link href="/" className="text-sm font-semibold text-teal-700">
-            에어체크
+            홈으로
           </Link>
           <h1 className="mt-3 text-2xl font-bold text-slate-950 sm:text-3xl">{title}</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{description}</p>

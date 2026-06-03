@@ -50,7 +50,7 @@ export function AirGradeChart({ good, moderate, bad, veryBad }: { good: number; 
   return (
     <div className="w-full">
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        전국 측정소를 현재 PM10·PM2.5 기준으로 분류한 비율입니다. 차트 조각이나 범례를 선택하면 해당 등급 측정소 목록을 볼 수 있습니다.
+        전국 측정소를 현재 미세먼지와 초미세먼지 기준으로 분류한 비율입니다. 차트 조각이나 범례를 선택하면 해당 등급 측정소 목록을 볼 수 있습니다.
       </p>
 
       <div className="mt-3 h-64 w-full">

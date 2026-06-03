@@ -50,8 +50,8 @@ export default async function HomePage() {
 
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-0 lg:grid-cols-4">
         <MetricCard label="전국 대기질 점수" value={`${national.ventilationScore}점`} tone={national.ventilationScore >= 70 ? "good" : "warn"} />
-        <MetricCard label="평균 PM10" value={microgram(national.avgPm10)} />
-        <MetricCard label="평균 PM2.5" value={microgram(national.avgPm25)} tone={national.avgPm25 > 35 ? "bad" : "default"} />
+        <MetricCard label="평균 미세먼지" value={microgram(national.avgPm10)} />
+        <MetricCard label="평균 초미세먼지" value={microgram(national.avgPm25)} tone={national.avgPm25 > 35 ? "bad" : "default"} />
         <MetricCard label="측정소 수" value={number(national.stationCount)} />
         <MetricCard
           label="환기 판정"

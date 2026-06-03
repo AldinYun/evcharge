@@ -173,11 +173,11 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
                 <div className="mt-1 font-semibold">{nearest.metric.ventilationScore}점</div>
               </div>
               <div>
-                <div className="text-xs text-slate-500">PM10</div>
+                <div className="text-xs text-slate-500">미세먼지</div>
                 <div className="mt-1 font-semibold">{microgram(nearest.metric.pm10)}</div>
               </div>
               <div>
-                <div className="text-xs text-slate-500">PM2.5</div>
+                <div className="text-xs text-slate-500">초미세먼지</div>
                 <div className="mt-1 font-semibold">{microgram(nearest.metric.pm25)}</div>
               </div>
             </div>
@@ -211,8 +211,8 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
               </div>
               {metric ? (
                 <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-slate-600">
-                  <span>PM10 {microgram(metric.pm10)}</span>
-                  <span>PM2.5 {microgram(metric.pm25)}</span>
+                  <span>미세먼지 {microgram(metric.pm10)}</span>
+                  <span>초미세먼지 {microgram(metric.pm25)}</span>
                   <span>{ventilationStatusLabel(metric.ventilationStatus)}</span>
                 </div>
               ) : null}
