@@ -12,8 +12,8 @@ import { getDashboardDataset } from "@/lib/data";
 import { dateTime, microgram, number, ventilationStatusLabel } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "오늘 대기질 괜찮을까 | 전국 미세먼지·환기 가이드",
-  description: "전국 미세먼지와 초미세먼지 관측값을 기반으로 지금 대기질과 환기 가능 여부를 계산합니다."
+  title: "오늘 공기 괜찮을까 | 전국 미세먼지·환기 가이드",
+  description: "전국 미세먼지와 초미세먼지 관측값을 바탕으로 오늘 공기 상태와 환기 타이밍을 확인합니다."
 };
 
 export default async function HomePage() {
@@ -41,8 +41,8 @@ export default async function HomePage() {
 
   return (
     <DashboardShell
-      title="오늘 대기질 괜찮을까"
-      description="미세먼지, 초미세먼지, 습도, 풍속을 rule-based 공식으로 계산한 생활 대기질 대시보드입니다."
+      title="오늘 공기 괜찮을까"
+      description="전국 미세먼지와 초미세먼지 흐름을 모아, 지금 숨쉬기 좋은 지역과 환기하기 좋은 타이밍을 보여드립니다."
     >
       <div className="lg:hidden">
         <SidoAirMap regions={data.sidoMetrics} cityRegions={data.sigunguMetrics} />
