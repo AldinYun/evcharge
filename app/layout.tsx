@@ -3,8 +3,11 @@ import { AccessTracker } from "@/components/analytics/AccessTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "미세먼지 환기 타이밍",
-  description: "지역별 미세먼지, 초미세먼지, 환기 가능 여부를 자동 수집 데이터 기반으로 보여주는 생활 대기질 대시보드"
+  title: "미세먼지 환기 대시보드",
+  description: "지역별 미세먼지, 초미세먼지, 환기 가능 여부를 자동 수집 데이터 기반으로 보여주는 생활 대기질 대시보드",
+  icons: {
+    icon: "/icon.svg"
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
