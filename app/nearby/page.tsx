@@ -37,13 +37,6 @@ export default async function NearbyPage() {
         <NearbyAirStationFinder stations={stations} metrics={metrics} limit={16} />
         <aside className="space-y-6">
           <AdSlot slotId="nearby-side" minHeight={260} />
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-            <h2 className="text-lg font-semibold text-slate-950">위치 권한 안내</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              브라우저 위치 기능은 보안 정책상 HTTPS 또는 localhost에서 동작합니다. 서버 IP의 HTTP 주소로 접속한 경우에는 기준 지역 버튼을 사용하거나 HTTPS
-              리버스 프록시를 설정해 주세요.
-            </p>
-          </section>
         </aside>
       </div>
     </DashboardShell>
