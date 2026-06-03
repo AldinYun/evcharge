@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { AirGradeChart } from "@/components/charts/AirGradeChart";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
@@ -38,7 +37,6 @@ export default async function RegionPage({ params }: PageProps) {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
-          <AdSlot slotId={`region-${sido}`} minHeight={140} />
           <AirRankingTable title={rankingTitle} regions={sigungu} metric="ventilationScore" />
         </div>
         <aside className="space-y-6">
@@ -46,7 +44,6 @@ export default async function RegionPage({ params }: PageProps) {
             <h2 className="text-lg font-semibold">대기질 등급 분포</h2>
             <AirGradeChart good={region.goodCount} moderate={region.moderateCount} bad={region.badCount} veryBad={region.veryBadCount} />
           </section>
-          <AdSlot slotId={`region-side-${sido}`} minHeight={240} />
         </aside>
       </div>
     </DashboardShell>

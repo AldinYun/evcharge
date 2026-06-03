@@ -6,9 +6,9 @@ const numeric = (value: unknown, fallback: number) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const coordinate = (value: unknown, fallback: number) => {
+const coordinate = (value: unknown, fallback: number, min: number, max: number) => {
   const parsed = numeric(value, fallback);
-  return parsed >= -180 && parsed <= 180 ? parsed : fallback;
+  return parsed >= min && parsed <= max ? parsed : fallback;
 };
 
 const slug = (value: string) => value.replace(/\s+/g, "-").replace(/[^\p{L}\p{N}-]/gu, "");
@@ -33,8 +33,8 @@ export function normalizeAirApiResponse(externalStations: ExternalAirStation[]) 
         sido: external.sidoName,
         sigungu: external.sigunguName ?? external.addr.split(/\s+/)[1] ?? "미분류",
         address: external.addr,
-        latitude: coordinate(external.latitude, 37.5665),
-        longitude: coordinate(external.longitude, 126.978)
+        latitude: coordinate(external.latitude, 37.5665, -90, 90),
+        longitude: coordinate(external.longitude, 126.978, -180, 180)
       });
       seenStations.add(id);
     }

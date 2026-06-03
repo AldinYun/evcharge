@@ -21,7 +21,13 @@ type Metric = {
   ventilationStatus: string;
 };
 
-type UserLocation = { latitude: number; longitude: number; label: string };
+type UserLocation = {
+  latitude: number;
+  longitude: number;
+  label: string;
+  accuracy?: number;
+  savedAt?: number;
+};
 
 const sampleLocations: UserLocation[] = [
   { label: "서울 시청", latitude: 37.5665, longitude: 126.978 },
@@ -31,6 +37,8 @@ const sampleLocations: UserLocation[] = [
 ];
 
 const savedLocationKey = "airvent:user-location";
+const savedLocationMaxAgeMs = 10 * 60 * 1000;
+const maxTrustedAccuracyMeters = 25000;
 
 function distanceKm(from: UserLocation, station: Station) {
   const radius = 6371;
@@ -49,75 +57,111 @@ function isLocationAllowedOrigin() {
   return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 }
 
+function isKoreaCoordinate(station: Station) {
+  return station.latitude >= 32 && station.latitude <= 39.5 && station.longitude >= 124 && station.longitude <= 132;
+}
+
 function loadSavedLocation() {
   try {
     const raw = window.localStorage.getItem(savedLocationKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as UserLocation;
-    if (Number.isFinite(parsed.latitude) && Number.isFinite(parsed.longitude) && parsed.label) return parsed;
+    if (!Number.isFinite(parsed.latitude) || !Number.isFinite(parsed.longitude) || !parsed.label) return null;
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > savedLocationMaxAgeMs) return null;
+    return parsed;
   } catch {
     return null;
   }
-  return null;
 }
 
 function saveLocation(location: UserLocation) {
   try {
-    window.localStorage.setItem(savedLocationKey, JSON.stringify(location));
+    window.localStorage.setItem(savedLocationKey, JSON.stringify({ ...location, savedAt: Date.now() }));
   } catch {
     // localStorage can be unavailable in restricted browser modes.
   }
 }
 
+function clearSavedLocation() {
+  try {
+    window.localStorage.removeItem(savedLocationKey);
+  } catch {
+    // localStorage can be unavailable in restricted browser modes.
+  }
+}
+
+function accuracyText(accuracy?: number) {
+  if (!accuracy) return "";
+  if (accuracy >= 1000) return `위치 오차 약 ${(accuracy / 1000).toFixed(1)}km`;
+  return `위치 오차 약 ${Math.round(accuracy)}m`;
+}
+
 export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stations: Station[]; metrics: Metric[]; limit?: number }) {
   const [location, setLocation] = useState<UserLocation | null>(null);
-  const [status, setStatus] = useState("현재 위치를 확인하면 가까운 측정소와 환기 상태를 보여드립니다.");
+  const [status, setStatus] = useState("현재 위치를 확인하면 가까운 측정소의 대기 상태를 보여드립니다.");
   const requestedRef = useRef(false);
   const metricByStation = useMemo(() => new Map(metrics.map((metric) => [metric.stationId, metric])), [metrics]);
+  const validStations = useMemo(() => stations.filter(isKoreaCoordinate), [stations]);
+  const invalidStationCount = stations.length - validStations.length;
 
   const nearby = useMemo(() => {
     if (!location) return [];
-    return stations
+    return validStations
       .map((station) => ({ station, metric: metricByStation.get(station.id), distance: distanceKm(location, station) }))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, limit);
-  }, [limit, location, metricByStation, stations]);
+  }, [limit, location, metricByStation, validStations]);
 
   const nearest = nearby[0];
 
-  const useLocation = (nextLocation: UserLocation, nextStatus: string) => {
+  const useLocation = (nextLocation: UserLocation, nextStatus: string, shouldSave = true) => {
     setLocation(nextLocation);
-    saveLocation(nextLocation);
+    if (shouldSave) saveLocation(nextLocation);
     setStatus(nextStatus);
   };
 
   const requestLocation = () => {
+    clearSavedLocation();
+
     if (!isLocationAllowedOrigin()) {
-      setStatus("브라우저 위치 기능은 HTTPS 또는 localhost에서만 동작합니다. 현재 서버 IP로 접속 중이면 아래 지역을 선택하거나 HTTPS를 설정해 주세요.");
+      setStatus("브라우저 위치 기능은 HTTPS 또는 localhost에서만 동작합니다. https://aircheck.kr 주소로 접속해 주세요.");
       return;
     }
 
     if (!navigator.geolocation) {
-      setStatus("이 브라우저는 위치 확인을 지원하지 않습니다. 아래 지역을 선택해 가까운 측정소를 확인해 주세요.");
+      setStatus("이 브라우저는 위치 확인을 지원하지 않습니다. 아래 기준 지역을 선택해 가까운 측정소를 확인해 주세요.");
       return;
     }
 
     setStatus("현재 위치 권한을 확인하는 중입니다.");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        useLocation(
-          { latitude: position.coords.latitude, longitude: position.coords.longitude, label: "현재 위치" },
-          "현재 위치 기준으로 가까운 측정소를 정렬했습니다."
-        );
+        const nextLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          label: "현재 위치"
+        };
+        const accuracy = position.coords.accuracy;
+
+        if (accuracy > maxTrustedAccuracyMeters) {
+          setLocation(null);
+          setStatus(
+            `${accuracyText(accuracy)}로 정확도가 낮아 가까운 측정소를 확정하지 않았습니다. 휴대폰은 GPS를 켜고, 노트북은 위치 권한과 Wi-Fi를 켠 뒤 다시 확인해 주세요.`
+          );
+          return;
+        }
+
+        useLocation(nextLocation, `현재 위치 기준으로 가까운 측정소를 정렬했습니다. ${accuracyText(accuracy)}`);
       },
       (error) => {
         const message =
           error.code === error.PERMISSION_DENIED
-            ? "위치 권한이 거부되었습니다. 브라우저 권한을 허용하거나 아래 지역을 선택해 주세요."
-            : "현재 위치를 가져오지 못했습니다. 잠시 후 다시 시도하거나 아래 지역을 선택해 주세요.";
+            ? "위치 권한이 거부되었습니다. 브라우저 권한에서 위치 접근을 허용한 뒤 다시 확인해 주세요."
+            : "현재 위치를 가져오지 못했습니다. 잠시 뒤 다시 시도하거나 아래 기준 지역을 선택해 주세요.";
         setStatus(message);
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   };
 
@@ -125,17 +169,12 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
     const saved = loadSavedLocation();
     if (saved) {
       setLocation(saved);
-      setStatus(`${saved.label} 기준으로 가까운 측정소를 정렬했습니다.`);
-      return;
+      setStatus(`${saved.label} 기준으로 가까운 측정소를 정렬했습니다. ${accuracyText(saved.accuracy)}`);
     }
 
     if (requestedRef.current) return;
     requestedRef.current = true;
-    if (isLocationAllowedOrigin()) {
-      requestLocation();
-    } else {
-      setStatus("서버 IP의 HTTP 주소에서는 브라우저 위치 권한이 차단됩니다. 아래 지역을 선택하거나 HTTPS로 접속해 주세요.");
-    }
+    if (isLocationAllowedOrigin()) requestLocation();
   }, []);
 
   return (
@@ -144,6 +183,11 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
         <div>
           <h2 className="text-lg font-semibold text-slate-950">내 주변 미세먼지</h2>
           <p className="mt-1 text-sm text-slate-600">{status}</p>
+          {invalidStationCount > 0 ? (
+            <p className="mt-1 text-xs text-amber-700">
+              좌표가 비정상인 측정소 {invalidStationCount}곳은 거리 계산에서 제외했습니다. 데이터 수집을 다시 실행하면 보정됩니다.
+            </p>
+          ) : null}
         </div>
         <button type="button" onClick={requestLocation} className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white">
           위치 다시 확인
@@ -190,7 +234,7 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
           <button
             key={sample.label}
             type="button"
-            onClick={() => useLocation(sample, `${sample.label} 기준으로 가까운 측정소를 정렬했습니다.`)}
+            onClick={() => useLocation(sample, `${sample.label} 기준으로 가까운 측정소를 정렬했습니다.`, false)}
             className="rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             {sample.label}

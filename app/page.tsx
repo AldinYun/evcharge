@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { AirGradeChart } from "@/components/charts/AirGradeChart";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RegionInsightCard } from "@/components/dashboard/RegionInsightCard";
@@ -70,7 +69,6 @@ export default async function HomePage() {
             <SidoAirMap regions={data.sidoMetrics} cityRegions={data.sigunguMetrics} />
           </div>
           <NearbyAirStationFinder stations={stationLocations} metrics={locationMetrics} limit={6} />
-          <AdSlot slotId="home-mid" minHeight={140} />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <RegionInsightCard title="대기질 상위 시/구" regions={bestAirQuality} metric="ventilationScore" />
             <RegionInsightCard title="초미세먼지 높은 시/구" regions={worstPm25} metric="avgPm25" />
@@ -82,7 +80,6 @@ export default async function HomePage() {
             <h2 className="text-lg font-semibold">대기질 등급 분포</h2>
             <AirGradeChart good={national.goodCount} moderate={national.moderateCount} bad={national.badCount} veryBad={national.veryBadCount} />
           </section>
-          <AdSlot slotId="home-side" minHeight={260} />
         </aside>
       </div>
     </DashboardShell>

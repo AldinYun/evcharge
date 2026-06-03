@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { getDashboardDataset } from "@/lib/data";
@@ -35,7 +34,7 @@ export default async function SigunguPage({ params }: PageProps) {
         <MetricCard label="측정소 수" value={`${region.stationCount}곳`} />
       </section>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="mt-6">
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
           <h2 className="text-lg font-semibold text-slate-950">측정소별 현황</h2>
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -57,9 +56,6 @@ export default async function SigunguPage({ params }: PageProps) {
             ))}
           </div>
         </section>
-        <aside>
-          <AdSlot slotId={`sigungu-${sido}-${sigungu}`} minHeight={260} />
-        </aside>
       </div>
     </DashboardShell>
   );

@@ -11,9 +11,10 @@ type CalloutLabel = {
 };
 
 const calloutLabels = new Map<string, CalloutLabel>([
-  ["\uC11C\uC6B8", { x: 219, y: 124, anchorX: 258, anchorY: 145, fontSize: 15 }],
+  ["\uC11C\uC6B8", { x: 216, y: 111, anchorX: 258, anchorY: 145, fontSize: 15 }],
   ["\uC778\uCC9C", { x: 176, y: 183, anchorX: 226, anchorY: 183, fontSize: 15 }],
   ["\uC138\uC885", { x: 263, y: 256, anchorX: 292, anchorY: 284, fontSize: 14 }],
+  ["\uCDA9\uBD81", { x: 407, y: 263, anchorX: 365, anchorY: 276, fontSize: 15 }],
   ["\uB300\uC804", { x: 337, y: 332, anchorX: 307, anchorY: 318, fontSize: 14 }],
   ["\uAD11\uC8FC", { x: 212, y: 482, anchorX: 241, anchorY: 481, fontSize: 14 }],
   ["\uB300\uAD6C", { x: 472, y: 390, anchorX: 435, anchorY: 390, fontSize: 14 }],

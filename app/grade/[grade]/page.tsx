@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { getDashboardDataset } from "@/lib/data";
@@ -90,7 +89,6 @@ export default async function GradePage({ params }: PageProps) {
           </div>
         </section>
         <aside className="space-y-6">
-          <AdSlot slotId={`grade-${params.grade}`} minHeight={260} />
           <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
             <h2 className="text-lg font-semibold text-slate-950">등급 기준</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">

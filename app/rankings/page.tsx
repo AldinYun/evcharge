@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AirRankingTable } from "@/components/tables/AirRankingTable";
 import { getDashboardDataset } from "@/lib/data";
@@ -18,7 +17,6 @@ export default async function RankingsPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <AirRankingTable title="지금 환기 좋은 지역 TOP 20" regions={[...regions].sort((a, b) => b.ventilationScore - a.ventilationScore).slice(0, 20)} metric="ventilationScore" />
         <AirRankingTable title="초미세먼지 높은 지역 TOP 20" regions={[...regions].sort((a, b) => b.avgPm25 - a.avgPm25).slice(0, 20)} metric="avgPm25" />
-        <AdSlot slotId="rankings-mid" className="xl:col-span-2" minHeight={140} />
         <AirRankingTable title="야외활동 좋은 지역 TOP 20" regions={[...regions].sort((a, b) => b.outdoorActivityScore - a.outdoorActivityScore).slice(0, 20)} metric="outdoorActivityScore" />
         <AirRankingTable title="빨래하기 좋은 지역 TOP 20" regions={[...regions].sort((a, b) => b.laundryScore - a.laundryScore).slice(0, 20)} metric="laundryScore" />
       </div>
