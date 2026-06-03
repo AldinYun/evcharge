@@ -19,13 +19,22 @@ function isAuthorized(secret?: string) {
   return secret === adminSecret;
 }
 
+function pipelineStatusLabel(status: string) {
+  if (status === "success") return "성공";
+  if (status === "partial_success") return "부분 성공";
+  if (status === "failed") return "실패";
+  if (status === "running") return "실행 중";
+  if (status === "mock") return "목 데이터";
+  return "확인 필요";
+}
+
 export default async function AdminPage({ searchParams }: PageProps) {
   if (!isAuthorized(searchParams?.secret)) {
     return (
       <DashboardShell title="관리자 전용" description="수집 상태와 접근 통계는 관리자만 볼 수 있습니다.">
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
           <h2 className="text-lg font-semibold text-slate-950">접근 권한이 필요합니다</h2>
-          <p className="mt-2 text-sm text-slate-600">관리자 비밀값을 포함한 URL로 접속하세요.</p>
+          <p className="mt-2 text-sm text-slate-600">관리자 비밀값을 포함한 URL로 접속해 주세요.</p>
           <p className="mt-3 rounded-md bg-slate-100 p-3 text-sm text-slate-700">/admin?secret=ADMIN_SECRET</p>
         </section>
       </DashboardShell>
@@ -37,7 +46,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
   return (
     <DashboardShell title="관리자 대시보드" description="수집 파이프라인 상태와 페이지 접근 통계를 확인합니다.">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="파이프라인 상태" value={status.status === "healthy" ? "정상" : "확인 필요"} tone="good" helper={status.message} />
+        <MetricCard label="파이프라인 상태" value={pipelineStatusLabel(status.latestRunStatus)} tone="good" helper={status.message} />
+        <MetricCard label="최근 실행 시각" value={dateTime(status.latestRunAt)} />
         <MetricCard label="마지막 성공 시각" value={dateTime(status.lastSuccessAt)} />
         <MetricCard label="마지막 실패 시각" value={dateTime(status.lastFailureAt)} tone="warn" />
         <MetricCard label="측정소 수" value={number(status.stationCount)} />

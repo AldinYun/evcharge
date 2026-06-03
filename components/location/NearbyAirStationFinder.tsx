@@ -30,6 +30,8 @@ const sampleLocations: UserLocation[] = [
   { label: "제주 공항", latitude: 33.5067, longitude: 126.493 }
 ];
 
+const savedLocationKey = "airvent:user-location";
+
 function distanceKm(from: UserLocation, station: Station) {
   const radius = 6371;
   const rad = (degree: number) => (degree * Math.PI) / 180;
@@ -41,9 +43,35 @@ function distanceKm(from: UserLocation, station: Station) {
   return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+function isLocationAllowedOrigin() {
+  if (typeof window === "undefined") return false;
+  if (window.isSecureContext) return true;
+  return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+}
+
+function loadSavedLocation() {
+  try {
+    const raw = window.localStorage.getItem(savedLocationKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as UserLocation;
+    if (Number.isFinite(parsed.latitude) && Number.isFinite(parsed.longitude) && parsed.label) return parsed;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function saveLocation(location: UserLocation) {
+  try {
+    window.localStorage.setItem(savedLocationKey, JSON.stringify(location));
+  } catch {
+    // localStorage can be unavailable in restricted browser modes.
+  }
+}
+
 export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stations: Station[]; metrics: Metric[]; limit?: number }) {
   const [location, setLocation] = useState<UserLocation | null>(null);
-  const [status, setStatus] = useState("현재 위치를 확인해 내 지역 대기질을 보여드립니다.");
+  const [status, setStatus] = useState("현재 위치를 확인하면 가까운 측정소와 환기 상태를 보여드립니다.");
   const requestedRef = useRef(false);
   const metricByStation = useMemo(() => new Map(metrics.map((metric) => [metric.stationId, metric])), [metrics]);
 
@@ -57,33 +85,64 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
 
   const nearest = nearby[0];
 
+  const useLocation = (nextLocation: UserLocation, nextStatus: string) => {
+    setLocation(nextLocation);
+    saveLocation(nextLocation);
+    setStatus(nextStatus);
+  };
+
   const requestLocation = () => {
-    if (!navigator.geolocation) {
-      setStatus("이 브라우저에서는 위치 확인을 지원하지 않습니다. 아래 모의 위치를 선택해 보세요.");
+    if (!isLocationAllowedOrigin()) {
+      setStatus("브라우저 위치 기능은 HTTPS 또는 localhost에서만 동작합니다. 현재 서버 IP로 접속 중이면 아래 지역을 선택하거나 HTTPS를 설정해 주세요.");
       return;
     }
+
+    if (!navigator.geolocation) {
+      setStatus("이 브라우저는 위치 확인을 지원하지 않습니다. 아래 지역을 선택해 가까운 측정소를 확인해 주세요.");
+      return;
+    }
+
     setStatus("현재 위치 권한을 확인하는 중입니다.");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude, label: "내 현재 위치" });
-        setStatus("현재 위치 기준으로 가장 가까운 측정소를 찾았습니다.");
+        useLocation(
+          { latitude: position.coords.latitude, longitude: position.coords.longitude, label: "현재 위치" },
+          "현재 위치 기준으로 가까운 측정소를 정렬했습니다."
+        );
       },
-      () => setStatus("위치 권한을 사용할 수 없습니다. 아래 모의 위치로 테스트할 수 있습니다."),
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      (error) => {
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? "위치 권한이 거부되었습니다. 브라우저 권한을 허용하거나 아래 지역을 선택해 주세요."
+            : "현재 위치를 가져오지 못했습니다. 잠시 후 다시 시도하거나 아래 지역을 선택해 주세요.";
+        setStatus(message);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
     );
   };
 
   useEffect(() => {
+    const saved = loadSavedLocation();
+    if (saved) {
+      setLocation(saved);
+      setStatus(`${saved.label} 기준으로 가까운 측정소를 정렬했습니다.`);
+      return;
+    }
+
     if (requestedRef.current) return;
     requestedRef.current = true;
-    requestLocation();
+    if (isLocationAllowedOrigin()) {
+      requestLocation();
+    } else {
+      setStatus("서버 IP의 HTTP 주소에서는 브라우저 위치 권한이 차단됩니다. 아래 지역을 선택하거나 HTTPS로 접속해 주세요.");
+    }
   }, []);
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">내 지역 미세먼지</h2>
+          <h2 className="text-lg font-semibold text-slate-950">내 주변 미세먼지</h2>
           <p className="mt-1 text-sm text-slate-600">{status}</p>
         </div>
         <button type="button" onClick={requestLocation} className="rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white">
@@ -131,11 +190,8 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
           <button
             key={sample.label}
             type="button"
-            onClick={() => {
-              setLocation(sample);
-              setStatus(`${sample.label} 기준으로 가까운 측정소를 정렬했습니다.`);
-            }}
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700"
+            onClick={() => useLocation(sample, `${sample.label} 기준으로 가까운 측정소를 정렬했습니다.`)}
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             {sample.label}
           </button>

@@ -79,16 +79,19 @@ export async function getPipelineStatus() {
   noStore();
 
   try {
-    const [lastSuccess, lastFailure, stationCount, sampleCount] = await Promise.all([
+    const [latestRun, lastSuccess, lastFailure, stationCount, sampleCount] = await Promise.all([
+      prisma.pipelineRun.findFirst({ orderBy: { startedAt: "desc" } }),
       prisma.pipelineRun.findFirst({ where: { status: { in: ["success", "partial_success"] } }, orderBy: { finishedAt: "desc" } }),
       prisma.pipelineRun.findFirst({ where: { status: "failed" }, orderBy: { finishedAt: "desc" } }),
       prisma.monitoringStation.count(),
       prisma.airQualityReading.count()
     ]);
 
-    if (lastSuccess || stationCount > 0 || sampleCount > 0) {
+    if (latestRun || lastSuccess || stationCount > 0 || sampleCount > 0) {
       return {
         status: "healthy" as const,
+        latestRunAt: latestRun?.finishedAt ?? latestRun?.startedAt ?? lastSuccess?.finishedAt ?? lastSuccess?.startedAt ?? new Date(),
+        latestRunStatus: latestRun?.status ?? "unknown",
         lastSuccessAt: lastSuccess?.finishedAt ?? lastSuccess?.startedAt ?? new Date(),
         lastFailureAt: lastFailure?.finishedAt ?? lastFailure?.startedAt ?? new Date(0),
         stationCount,
@@ -103,6 +106,8 @@ export async function getPipelineStatus() {
   const dataset = getMockAirDashboardDataset();
   return {
     status: "healthy" as const,
+    latestRunAt: dataset.lastCollectedAt ?? dataset.lastMeasuredAt,
+    latestRunStatus: "mock",
     lastSuccessAt: dataset.lastMeasuredAt,
     lastFailureAt: new Date(dataset.lastMeasuredAt.getTime() - 1000 * 60 * 60 * 26),
     stationCount: dataset.stations.length,
