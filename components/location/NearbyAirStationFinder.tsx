@@ -38,7 +38,7 @@ const sampleLocations: UserLocation[] = [
 
 const savedLocationKey = "airvent:user-location";
 const savedLocationMaxAgeMs = 10 * 60 * 1000;
-const maxTrustedAccuracyMeters = 25000;
+const maxTrustedAccuracyMeters = 10000;
 
 function distanceKm(from: UserLocation, station: Station) {
   const radius = 6371;
@@ -94,6 +94,10 @@ function accuracyText(accuracy?: number) {
   if (!accuracy) return "";
   if (accuracy >= 1000) return `위치 오차 약 ${(accuracy / 1000).toFixed(1)}km`;
   return `위치 오차 약 ${Math.round(accuracy)}m`;
+}
+
+function coordinateText(location: UserLocation) {
+  return `감지 좌표 ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`;
 }
 
 export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stations: Station[]; metrics: Metric[]; limit?: number }) {
@@ -183,6 +187,7 @@ export function NearbyAirStationFinder({ stations, metrics, limit = 10 }: { stat
         <div>
           <h2 className="text-lg font-semibold text-slate-950">내 주변 미세먼지</h2>
           <p className="mt-1 text-sm text-slate-600">{status}</p>
+          {location ? <p className="mt-1 text-xs text-slate-500">{coordinateText(location)}</p> : null}
           {invalidStationCount > 0 ? (
             <p className="mt-1 text-xs text-amber-700">
               좌표가 비정상인 측정소 {invalidStationCount}곳은 거리 계산에서 제외했습니다. 데이터 수집을 다시 실행하면 보정됩니다.

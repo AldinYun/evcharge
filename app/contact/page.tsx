@@ -16,7 +16,7 @@ export default function ContactPage() {
         <p>
           에어체크는 개인 운영 서비스입니다. 측정소 위치 오류, 지역명 오류, 데이터 갱신 문제를 발견하면 아래 연락처로 알려주세요.
         </p>
-        <p className="font-medium text-slate-950">contact@aircheck.kr</p>
+        <p className="font-medium text-slate-950">aldincle@gmail.com</p>
       </InfoSection>
       <InfoSection title="문의할 때 알려주면 좋은 내용">
         <ul className="list-disc space-y-1 pl-5">
