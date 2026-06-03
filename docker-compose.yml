@@ -35,7 +35,26 @@ services:
       NEXT_PUBLIC_ADSENSE_CLIENT_ID: ""
       RUN_MOCK_PIPELINE_ON_START: "true"
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: airvent-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - airvent-caddy-data:/data
+      - airvent-caddy-config:/config
 
 volumes:
   airvent-postgres-data:
+  airvent-caddy-data:
+  airvent-caddy-config:
