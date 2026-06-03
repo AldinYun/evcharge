@@ -33,10 +33,6 @@ function fillColor(score: number) {
   return "#e11d48";
 }
 
-function textColor(score: number) {
-  return score >= 55 ? "#ffffff" : "#ffffff";
-}
-
 function hrefForSido(sido: string) {
   return `/region/${encodeURIComponent(sido)}`;
 }
@@ -47,18 +43,18 @@ export function SidoAirMap({ regions, cityRegions = [] }: { regions: AirRegionMe
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-      <h2 className="text-lg font-semibold text-slate-950">전국 시도별 환기 지도</h2>
-      <p className="mt-1 text-sm text-slate-600">시도 영역을 선택하면 지역 상세로 이동합니다. 색상은 환기 점수 기준입니다.</p>
+      <h2 className="text-lg font-semibold text-slate-950">전국 시도별 대기질 지도</h2>
+      <p className="mt-1 text-sm text-slate-600">시도 영역을 선택하면 지역 상세로 이동합니다. 색상은 대기질 점수 기준입니다.</p>
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,1fr)_300px]">
         <div className="rounded-lg border border-slate-200 bg-sky-50 p-3">
-          <svg viewBox="80 20 520 780" role="img" aria-label="전국 시도별 환기 점수 지도" className="h-auto w-full">
-            <title>전국 시도별 환기 점수 지도</title>
+          <svg viewBox="80 20 520 780" role="img" aria-label="전국 시도별 대기질 점수 지도" className="h-auto w-full">
+            <title>전국 시도별 대기질 점수 지도</title>
             <rect x="80" y="20" width="520" height="780" rx="24" fill="#f0f9ff" />
             {shapes.map((shape) => {
               const region = bySido.get(shape.sido);
               const score = region?.ventilationScore ?? 0;
               return (
-                <a key={shape.sido} href={hrefForSido(shape.sido)} aria-label={`${shape.sido} 환기 점수 ${score}점`}>
+                <a key={shape.sido} href={hrefForSido(shape.sido)} aria-label={`${shape.sido} 대기질 점수 ${score}점`}>
                   <path
                     d={shape.path}
                     fill={region ? fillColor(score) : "#cbd5e1"}
@@ -67,27 +63,11 @@ export function SidoAirMap({ regions, cityRegions = [] }: { regions: AirRegionMe
                     strokeLinejoin="round"
                     className="transition-opacity hover:opacity-80"
                   />
-                  <text
-                    x={shape.label.x}
-                    y={shape.label.y - 4}
-                    textAnchor="middle"
-                    fontSize="18"
-                    fontWeight="700"
-                    fill={textColor(score)}
-                    pointerEvents="none"
-                  >
+                  <text x={shape.label.x} y={shape.label.y - 4} textAnchor="middle" fontSize="18" fontWeight="700" fill="#ffffff" pointerEvents="none">
                     {shape.sido}
                   </text>
                   {region ? (
-                    <text
-                      x={shape.label.x}
-                      y={shape.label.y + 19}
-                      textAnchor="middle"
-                      fontSize="17"
-                      fontWeight="800"
-                      fill={textColor(score)}
-                      pointerEvents="none"
-                    >
+                    <text x={shape.label.x} y={shape.label.y + 19} textAnchor="middle" fontSize="17" fontWeight="800" fill="#ffffff" pointerEvents="none">
                       {score}
                     </text>
                   ) : null}
@@ -111,7 +91,7 @@ export function SidoAirMap({ regions, cityRegions = [] }: { regions: AirRegionMe
           </div>
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-slate-700">시/구 단위 환기 상위 지역</h3>
+          <h3 className="text-sm font-semibold text-slate-700">시/구 단위 대기질 상위 지역</h3>
           <div className="mt-3 space-y-2">
             {cityRanking.map((region) => (
               <a
