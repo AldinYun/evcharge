@@ -4,6 +4,7 @@ services:
     container_name: airvent-postgres
     restart: unless-stopped
     environment:
+      TZ: Asia/Seoul
       POSTGRES_USER: airvent
       POSTGRES_PASSWORD: airvent_password
       POSTGRES_DB: airvent
@@ -25,6 +26,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      TZ: Asia/Seoul
       DATABASE_URL: postgresql://airvent:airvent_password@postgres:5432/airvent
       AIR_API_BASE_URL: "https://apis.data.go.kr/B552584/ArpltnInforInqireSvc"
       AIR_STATION_API_BASE_URL: "https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc"
@@ -44,6 +46,7 @@ services:
     depends_on:
       - app
     environment:
+      TZ: Asia/Seoul
       APP_DOMAIN: ${APP_DOMAIN:-localhost}
     ports:
       - "80:80"
