@@ -86,12 +86,12 @@ export function AirGradeChart({ good, moderate, bad, veryBad }: { good: number; 
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {data.map((item) => (
           <a key={item.key} href={`/grade/${item.slug}`} className="rounded-md border border-slate-200 p-3 hover:bg-slate-50">
-            <div className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                {item.name}
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-900">
+                <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="whitespace-nowrap">{item.name}</span>
               </span>
-              <span className="text-sm font-bold text-slate-900">
+              <span className="shrink-0 whitespace-nowrap text-sm font-bold text-slate-900">
                 {number(item.value)}곳 · {item.percent}%
               </span>
             </div>
