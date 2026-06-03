@@ -2,6 +2,25 @@ import { koreaSidoShapes, koreaSidoViewBox } from "@/lib/korea-sido-map";
 import { microgram, ventilationStatusLabel } from "@/lib/format";
 import type { AirRegionMetric } from "@/lib/types";
 
+type CalloutLabel = {
+  x: number;
+  y: number;
+  anchorX: number;
+  anchorY: number;
+  fontSize: number;
+};
+
+const calloutLabels = new Map<string, CalloutLabel>([
+  ["\uC11C\uC6B8", { x: 219, y: 124, anchorX: 258, anchorY: 145, fontSize: 15 }],
+  ["\uC778\uCC9C", { x: 176, y: 183, anchorX: 226, anchorY: 183, fontSize: 15 }],
+  ["\uC138\uC885", { x: 263, y: 256, anchorX: 292, anchorY: 284, fontSize: 14 }],
+  ["\uB300\uC804", { x: 337, y: 332, anchorX: 307, anchorY: 318, fontSize: 14 }],
+  ["\uAD11\uC8FC", { x: 212, y: 482, anchorX: 241, anchorY: 481, fontSize: 14 }],
+  ["\uB300\uAD6C", { x: 472, y: 390, anchorX: 435, anchorY: 390, fontSize: 14 }],
+  ["\uC6B8\uC0B0", { x: 556, y: 424, anchorX: 510, anchorY: 428, fontSize: 14 }],
+  ["\uBD80\uC0B0", { x: 548, y: 488, anchorX: 492, anchorY: 476, fontSize: 14 }]
+]);
+
 function fillColor(score: number) {
   if (score >= 75) return "#0f766e";
   if (score >= 55) return "#f59e0b";
@@ -10,10 +29,6 @@ function fillColor(score: number) {
 
 function hrefForSido(sido: string) {
   return `/region/${encodeURIComponent(sido)}`;
-}
-
-function textShadowColor(score: number) {
-  return score >= 55 ? "rgba(15, 23, 42, 0.35)" : "rgba(255, 255, 255, 0.3)";
 }
 
 export function SidoAirMap({ regions, cityRegions = [] }: { regions: AirRegionMetric[]; cityRegions?: AirRegionMetric[] }) {
@@ -36,7 +51,10 @@ export function SidoAirMap({ regions, cityRegions = [] }: { regions: AirRegionMe
                 const region = bySido.get(shape.sido);
                 const score = region?.ventilationScore ?? 0;
                 const fill = region ? fillColor(score) : "#cbd5e1";
-                const shadow = textShadowColor(score);
+                const callout = calloutLabels.get(shape.sido);
+                const labelX = callout?.x ?? shape.label.x;
+                const labelY = callout?.y ?? shape.label.y;
+                const fontSize = callout?.fontSize ?? shape.label.fontSize;
 
                 return (
                   <a key={shape.sido} href={hrefForSido(shape.sido)} aria-label={`${shape.sido} 대기질 점수 ${score}점`}>
@@ -48,28 +66,46 @@ export function SidoAirMap({ regions, cityRegions = [] }: { regions: AirRegionMe
                       strokeLinejoin="round"
                       className="transition-opacity hover:opacity-80"
                     />
+                    {callout ? (
+                      <line
+                        x1={callout.anchorX}
+                        y1={callout.anchorY}
+                        x2={callout.x}
+                        y2={callout.y - 5}
+                        stroke="#0f172a"
+                        strokeOpacity="0.45"
+                        strokeWidth="2"
+                        pointerEvents="none"
+                      />
+                    ) : null}
                     <text
-                      x={shape.label.x}
-                      y={shape.label.y - 5}
+                      x={labelX}
+                      y={callout ? labelY : labelY - 5}
                       textAnchor="middle"
-                      fontSize={shape.label.fontSize}
+                      fontSize={fontSize}
                       fontWeight="800"
                       fill="#ffffff"
+                      stroke="#0f172a"
+                      strokeWidth="4"
+                      strokeLinejoin="round"
+                      paintOrder="stroke"
                       pointerEvents="none"
-                      style={{ textShadow: `0 1px 2px ${shadow}` }}
                     >
-                      {shape.sido}
+                      {callout && region ? `${shape.sido} ${score}` : shape.sido}
                     </text>
-                    {region ? (
+                    {region && !callout ? (
                       <text
-                        x={shape.label.x}
-                        y={shape.label.y + shape.label.fontSize}
+                        x={labelX}
+                        y={labelY + fontSize}
                         textAnchor="middle"
-                        fontSize={Math.max(12, shape.label.fontSize - 1)}
+                        fontSize={Math.max(12, fontSize - 1)}
                         fontWeight="800"
                         fill="#ffffff"
+                        stroke="#0f172a"
+                        strokeWidth="4"
+                        strokeLinejoin="round"
+                        paintOrder="stroke"
                         pointerEvents="none"
-                        style={{ textShadow: `0 1px 2px ${shadow}` }}
                       >
                         {score}
                       </text>
