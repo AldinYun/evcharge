@@ -16,6 +16,9 @@ export function DashboardShell({ children, title, description }: { children: Rea
             <Link className="rounded-md border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50" href="/rankings">
               지역 순위
             </Link>
+            <Link className="rounded-md border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50" href="/guide">
+              생활 가이드
+            </Link>
           </nav>
         </div>
       </header>
@@ -26,6 +29,9 @@ export function DashboardShell({ children, title, description }: { children: Rea
           <nav className="flex flex-wrap gap-3" aria-label="사이트 정보">
             <Link href="/about" className="hover:text-slate-950">
               소개
+            </Link>
+            <Link href="/guide" className="hover:text-slate-950">
+              생활 가이드
             </Link>
             <Link href="/privacy" className="hover:text-slate-950">
               개인정보처리방침

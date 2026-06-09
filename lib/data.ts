@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getCachedAggregate } from "@/lib/cache";
 import { prisma } from "@/lib/db";
 import { getMockAirDashboardDataset } from "@/lib/mock-data";
+import { ventilationScore } from "@/lib/metrics";
 import { aggregateAirDataset } from "@/lib/pipeline/aggregator";
 import type { AirQualityReading, MonitoringStation } from "@/lib/types";
 
@@ -73,6 +74,72 @@ export async function getDashboardDataset() {
   }
 
   return getCachedAggregate()?.dataset ?? getMockAirDashboardDataset();
+}
+
+export type AirTrendPoint = {
+  time: string;
+  measuredAt: Date;
+  pm10: number;
+  pm25: number;
+  ventilationScore: number;
+};
+
+function hourKey(date: Date) {
+  const key = new Date(date);
+  key.setMinutes(0, 0, 0);
+  return key.toISOString();
+}
+
+function formatTrendHour(date: Date) {
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", hour12: false }).format(date);
+}
+
+function average(values: number[]) {
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+}
+
+export async function getRegionTrend(sido: string, sigungu?: string): Promise<AirTrendPoint[]> {
+  noStore();
+
+  try {
+    const since = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const stations = await prisma.monitoringStation.findMany({
+      where: { sido, ...(sigungu ? { sigungu } : {}) },
+      select: { id: true }
+    });
+    const stationIds = stations.map((station) => station.id);
+    if (!stationIds.length) return [];
+
+    const readings = await prisma.airQualityReading.findMany({
+      where: { stationId: { in: stationIds }, measuredAt: { gte: since } },
+      orderBy: { measuredAt: "asc" }
+    });
+
+    const buckets = new Map<string, typeof readings>();
+    for (const reading of readings) {
+      const key = hourKey(reading.measuredAt);
+      buckets.set(key, [...(buckets.get(key) ?? []), reading]);
+    }
+
+    return [...buckets.entries()]
+      .map(([key, bucket]) => {
+        const measuredAt = new Date(key);
+        const pm10 = average(bucket.map((reading) => reading.pm10));
+        const pm25 = average(bucket.map((reading) => reading.pm25));
+        const humidity = average(bucket.map((reading) => reading.humidity));
+        const windSpeed = average(bucket.map((reading) => reading.windSpeed));
+        return {
+          time: `${formatTrendHour(measuredAt)}시`,
+          measuredAt,
+          pm10: Math.round(pm10),
+          pm25: Math.round(pm25),
+          ventilationScore: ventilationScore({ pm10, pm25, humidity, windSpeed, freshnessScore: 1 })
+        };
+      })
+      .slice(-24);
+  } catch {
+    return [];
+  }
 }
 
 export async function getPipelineStatus() {

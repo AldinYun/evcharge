@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AirGradeChart } from "@/components/charts/AirGradeChart";
+import { AirActionGuide } from "@/components/dashboard/AirActionGuide";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RegionInsightCard } from "@/components/dashboard/RegionInsightCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
@@ -65,6 +66,7 @@ export default async function HomePage() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
           <RegionSelectNavigator regions={data.sigunguMetrics} />
+          <AirActionGuide grade={national.airGrade} ventilationStatus={national.ventilationStatus} />
           <div className="hidden lg:block">
             <SidoAirMap regions={data.sidoMetrics} cityRegions={data.sigunguMetrics} />
           </div>

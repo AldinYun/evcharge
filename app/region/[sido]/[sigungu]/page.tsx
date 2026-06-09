@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AirTrendChart } from "@/components/charts/AirTrendChart";
+import { AirActionGuide } from "@/components/dashboard/AirActionGuide";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getDashboardDataset } from "@/lib/data";
+import { getDashboardDataset, getRegionTrend } from "@/lib/data";
 import { dateTime, microgram, ventilationStatusLabel } from "@/lib/format";
 
 type PageProps = { params: { sido: string; sigungu: string } };
@@ -22,6 +24,7 @@ export default async function SigunguPage({ params }: PageProps) {
   const data = await getDashboardDataset();
   const region = data.sigunguMetrics.find((metric) => metric.sido === sido && metric.sigungu === sigungu);
   if (!region) notFound();
+  const trend = await getRegionTrend(sido, sigungu);
   const stations = data.stationMetrics.filter((metric) => metric.sido === sido && metric.sigungu === sigungu).sort((a, b) => b.ventilationScore - a.ventilationScore);
 
   return (
@@ -34,7 +37,9 @@ export default async function SigunguPage({ params }: PageProps) {
         <MetricCard label="측정소 수" value={`${region.stationCount}곳`} />
       </section>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-6">
+        <AirActionGuide grade={region.airGrade} ventilationStatus={region.ventilationStatus} />
+        <AirTrendChart points={trend} />
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
           <h2 className="text-lg font-semibold text-slate-950">측정소별 현황</h2>
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">

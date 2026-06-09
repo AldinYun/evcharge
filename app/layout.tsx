@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     default: "에어체크 | 오늘의 미세먼지와 환기 정보",
     template: "%s | 에어체크"
   },
-  description: "전국 측정소의 미세먼지, 초미세먼지, 기상 정보를 바탕으로 오늘 환기하기 좋은 지역을 보여줍니다.",
+  description: "전국 측정소의 미세먼지, 초미세먼지, 날씨 정보를 바탕으로 오늘 환기하기 좋은 지역을 보여줍니다.",
   alternates: {
     canonical: "/"
   },

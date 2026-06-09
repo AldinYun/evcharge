@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AirGradeChart } from "@/components/charts/AirGradeChart";
+import { AirTrendChart } from "@/components/charts/AirTrendChart";
+import { AirActionGuide } from "@/components/dashboard/AirActionGuide";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AirRankingTable } from "@/components/tables/AirRankingTable";
-import { getDashboardDataset } from "@/lib/data";
+import { getDashboardDataset, getRegionTrend } from "@/lib/data";
 import { dateTime, microgram, ventilationStatusLabel } from "@/lib/format";
 
 type PageProps = { params: { sido: string } };
@@ -22,6 +24,7 @@ export default async function RegionPage({ params }: PageProps) {
   const data = await getDashboardDataset();
   const region = data.sidoMetrics.find((metric) => metric.sido === sido);
   if (!region) notFound();
+  const trend = await getRegionTrend(sido);
   const sigungu = data.sigunguMetrics.filter((metric) => metric.sido === sido).sort((a, b) => b.ventilationScore - a.ventilationScore);
   const rankingTitle = sido === "경기" ? "경기도 시 단위 환기 랭킹" : "시군구별 환기 랭킹";
 
@@ -37,6 +40,8 @@ export default async function RegionPage({ params }: PageProps) {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
+          <AirActionGuide grade={region.airGrade} ventilationStatus={region.ventilationStatus} />
+          <AirTrendChart points={trend} />
           <AirRankingTable title={rankingTitle} regions={sigungu} metric="ventilationScore" />
         </div>
         <aside className="space-y-6">
